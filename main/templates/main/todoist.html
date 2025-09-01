@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todoist Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 16px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .project-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+        }
+
+        .project-header {
+            text-align: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .project-header h2 {
+            color: #2d3748;
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .project-header .total-tasks {
+            color: #718096;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #f8f9fa;
+            color: #374151;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        th:first-child {
+            text-align: left;
+            padding-left: 16px;
+        }
+
+        th:last-child {
+            padding-right: 16px;
+        }
+
+        td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        td:first-child {
+            text-align: left;
+            padding-left: 16px;
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        td:last-child {
+            padding-right: 16px;
+        }
+
+        .priority-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
+            padding: 0 8px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            line-height: 1;
+        }
+
+        .p1 { background: #fee2e2; color: #dc2626; }
+        .p2 { background: #fef3c7; color: #d97706; }
+        .p3 { background: #dbeafe; color: #2563eb; }
+        .p4 { background: #f3f4f6; color: #6b7280; }
+        .total { background: #f9fafb; color: #374151; font-weight: 600; }
+
+        .today {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .weekend {
+            background: #f3f4f6 !important;
+        }
+
+        .today.weekend {
+            background: #f3f4f6 !important;
+        }
+
+        .date-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+        }
+
+        .day-name {
+            font-weight: 600;
+            color: #111827;
+            font-size: 0.9rem;
+        }
+
+        .date-display {
+            font-size: 0.75rem;
+            color: #374151;
+            opacity: 1;
+        }
+
+        .summary-stats {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+        }
+
+        .summary-stats h3 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 16px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 16px 12px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .stat-card.p1 { background: #fee2e2; color: #dc2626; }
+        .stat-card.p2 { background: #fef3c7; color: #d97706; }
+        .stat-card.p3 { background: #dbeafe; color: #2563eb; }
+        .stat-card.p4 { background: #f3f4f6; color: #6b7280; }
+
+        .stat-number {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        /* Tablet and Desktop Styles */
+        @media (min-width: 768px) {
+            body {
+                padding: 24px;
+            }
+
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .header p {
+                font-size: 1.1rem;
+            }
+
+            .dashboard {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 24px;
+            }
+
+            .project-section {
+                padding: 24px;
+            }
+
+            .project-header h2 {
+                font-size: 1.8rem;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 14px 10px;
+            }
+
+            .priority-count {
+                min-width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
+            }
+
+            .stat-card {
+                padding: 20px 16px;
+                min-height: 100px;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .stat-label {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Large Desktop Styles */
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1400px;
+            }
+
+            .dashboard {
+                gap: 32px;
+            }
+
+            .project-section {
+                padding: 28px;
+            }
+
+            table {
+                font-size: 0.95rem;
+            }
+
+            th, td {
+                padding: 16px 12px;
+            }
+
+            .priority-count {
+                min-width: 36px;
+                height: 36px;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .project-section, .summary-stats {
+                background: #1a202c;
+                color: #e2e8f0;
+            }
+
+            .project-header h2 {
+                color: #e2e8f0;
+            }
+
+            .project-header .total-tasks {
+                color: #a0aec0;
+            }
+
+            td:first-child {
+                color: #e2e8f0;
+            }
+
+            .weekend {
+                background: #2d3748;
+            }
+
+            .table-container {
+                background: #2d3748;
+            }
+
+            .summary-stats h3 {
+                color: #e2e8f0;
+            }
+        }
+
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            .project-section {
+                transition: none;
+            }
+        }
+
+        /* High contrast mode */
+        @media (prefers-contrast: high) {
+            .priority-count {
+                border: 2px solid currentColor;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Todoist Dashboard</h1>
+            <p>10-Day Task Overview</p>
+        </div>
+
+        <div class="dashboard">
+            <div class="project-section">
+                <div class="project-header">
+                    <h2>💼 Work</h2>
+                    <div class="total-tasks" id="work-total">Total Tasks: 0</div>
+                </div>
+                <div class="table-container">
+                    <table id="work-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>P1</th>
+                                <th>P2</th>
+                                <th>P3</th>
+                                <th>P4</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="work-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="project-section">
+                <div class="project-header">
+                    <h2>🏠 Personal</h2>
+                    <div class="total-tasks" id="personal-total">Total Tasks: 0</div>
+                </div>
+                <div class="table-container">
+                    <table id="personal-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>P1</th>
+                                <th>P2</th>
+                                <th>P3</th>
+                                <th>P4</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="personal-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-stats">
+            <h3>📊 Summary Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-card p1">
+                    <div class="stat-number" id="total-p1">0</div>
+                    <div class="stat-label">P1 Tasks</div>
+                </div>
+                <div class="stat-card p2">
+                    <div class="stat-number" id="total-p2">0</div>
+                    <div class="stat-label">P2 Tasks</div>
+                </div>
+                <div class="stat-card p3">
+                    <div class="stat-number" id="total-p3">0</div>
+                    <div class="stat-label">P3 Tasks</div>
+                </div>
+                <div class="stat-card p4">
+                    <div class="stat-number" id="total-p4">0</div>
+                    <div class="stat-label">P4 Tasks</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard data from Django
+        const dashboardData = {{ dashboard_data|safe }};
+        
+        function renderTable(projectType, data) {
+            const tbody = document.getElementById(`${projectType}-tbody`);
+            const totalElement = document.getElementById(`${projectType}-total`);
+            
+            let totalTasks = 0;
+            // Use the first date from the data as "today" to ensure consistency with backend
+            const today = data.dates[0] ? data.dates[0].date_str : new Date().toISOString().split('T')[0];
+            
+            tbody.innerHTML = '';
+            
+            data.dates.forEach(dateData => {
+                const row = document.createElement('tr');
+                
+                // Check if this is today
+                const isToday = dateData.date_str === today;
+                const isWeekend = ['Saturday', 'Sunday'].includes(dateData.day_name);
+                
+                if (isToday) {
+                    row.classList.add('today');
+                } else if (isWeekend) {
+                    row.classList.add('weekend');
+                }
+                
+                // Date column
+                const dateCell = document.createElement('td');
+                dateCell.innerHTML = `
+                    <div class="date-info">
+                        <div class="day-name">${dateData.day_name}</div>
+                        <div class="date-display">${dateData.display_date}</div>
+                    </div>
+                `;
+                row.appendChild(dateCell);
+                
+                // Priority columns
+                const priorities = ['P1', 'P2', 'P3', 'P4'];
+                priorities.forEach(priority => {
+                    const cell = document.createElement('td');
+                    const count = dateData.counts[priority];
+                    if (count > 0) {
+                        cell.innerHTML = `<span class="priority-count ${priority.toLowerCase()}">${count}</span>`;
+                    } else {
+                        cell.innerHTML = '<span class="priority-count" style="background: #f1f2f6; color: #747d8c;">0</span>';
+                    }
+                    row.appendChild(cell);
+                });
+                
+                // Total column
+                const totalCell = document.createElement('td');
+                const total = dateData.counts.total;
+                totalTasks += total;
+                if (total > 0) {
+                    totalCell.innerHTML = `<span class="priority-count total">${total}</span>`;
+                } else {
+                    totalCell.innerHTML = '<span class="priority-count" style="background: #f1f2f6; color: #747d8c;">0</span>';
+                }
+                row.appendChild(totalCell);
+                
+                tbody.appendChild(row);
+            });
+            
+            totalElement.textContent = `Total Tasks: ${totalTasks}`;
+            return totalTasks;
+        }
+        
+        function updateSummaryStats() {
+            let totalP1 = 0, totalP2 = 0, totalP3 = 0, totalP4 = 0;
+            
+            // Calculate totals from both projects
+            ['work', 'personal'].forEach(projectType => {
+                if (dashboardData[projectType]) {
+                    dashboardData[projectType].dates.forEach(dateData => {
+                        totalP1 += dateData.counts.P1;
+                        totalP2 += dateData.counts.P2;
+                        totalP3 += dateData.counts.P3;
+                        totalP4 += dateData.counts.P4;
+                    });
+                }
+            });
+            
+            document.getElementById('total-p1').textContent = totalP1;
+            document.getElementById('total-p2').textContent = totalP2;
+            document.getElementById('total-p3').textContent = totalP3;
+            document.getElementById('total-p4').textContent = totalP4;
+        }
+        
+        // Initialize dashboard
+        function initDashboard() {
+            if (dashboardData.work) {
+                renderTable('work', dashboardData.work);
+            }
+            if (dashboardData.personal) {
+                renderTable('personal', dashboardData.personal);
+            }
+            updateSummaryStats();
+        }
+        
+        // Auto-refresh every 5 minutes
+        setInterval(() => {
+            location.reload();
+        }, 5 * 60 * 1000);
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>
