@@ -33,6 +33,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://app.antibesln.com",
+    # add any other origin(s) that host your front-end
+]
+
 
 # Application definition
 
