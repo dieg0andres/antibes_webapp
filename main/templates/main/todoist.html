@@ -372,10 +372,80 @@
                 border: 2px solid currentColor;
             }
         }
+
+        /* Action Button Styles */
+        .action-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 32px;
+            padding: 20px 0;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            min-width: 180px;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-icon {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .action-btn:hover .btn-icon {
+            transform: rotate(180deg);
+        }
+
+        .action-btn:disabled .btn-icon {
+            transform: none;
+        }
+
+        /* Loading state */
+        .action-btn.loading .btn-text {
+            opacity: 0.7;
+        }
+
+        .action-btn.loading .btn-icon {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        {% csrf_token %}
         <div class="header">
             <h1>📋 Todoist Dashboard</h1>
             <p>10-Day Task Overview</p>
@@ -449,6 +519,13 @@
                     <div class="stat-label">P4 Tasks</div>
                 </div>
             </div>
+        </div>
+
+        <!-- Action Button Section -->
+        <div class="action-section">
+            <button id="action-button" class="action-btn" data-action="pull_old_tasks_to_today">
+                <span class="btn-text">Pull old tasks to today</span>
+            </button>
         </div>
     </div>
 
@@ -559,6 +636,53 @@
         
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', initDashboard);
+
+        // Handle clicks for any button with a data-action attribute
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('[data-action]');
+
+            buttons.forEach((btn) => {
+                btn.addEventListener('click', async function() {
+                    // Add loading state
+                    btn.classList.add('loading');
+                    btn.disabled = true;
+
+                    try {
+                        // Get CSRF token
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                                        document.cookie.split('; ')
+                                        .find(row => row.startsWith('csrftoken='))
+                                        ?.split('=')[1];
+
+                        const action = btn.dataset.action || 'refresh_data';
+
+                        // Make POST request
+                        const response = await fetch('/todoist/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken
+                            },
+                            body: JSON.stringify({ action })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.status === 'success') {
+                            console.log('Success:', result.message);
+                        } else {
+                            console.error('Error:', result.message);
+                        }
+                    } catch (error) {
+                        console.error('Request failed:', error);
+                    } finally {
+                        // Remove loading state
+                        btn.classList.remove('loading');
+                        btn.disabled = false;
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>

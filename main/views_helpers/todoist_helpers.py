@@ -1,5 +1,6 @@
 import pytz
 import requests
+import json
 
 from todoist_api_python.api import TodoistAPI
 from config.settings import TODOIST_TOKEN
@@ -14,6 +15,7 @@ api = TodoistAPI(TODOIST_TOKEN)
 
 TODOIST_TASKS_URL = "https://api.todoist.com/rest/v2/tasks"
 TODOIST_PROJECTS_URL = "https://api.todoist.com/rest/v2/projects"
+TODOIST_TASK_UPDATE_URL = "https://api.todoist.com/rest/v2/tasks/" # append task id
 
 projects = [
     {"name": "Inbox", "id": "2330914749"},
@@ -220,9 +222,9 @@ def create_dashboard_data(filtered_tasks):
     return dashboard_data
 
 
-def build_dashboard():
-    
+def get_tasks():
     response = requests.get(TODOIST_TASKS_URL, headers=headers)
+
     tasks = response.json()
     
     # Filter tasks to only show those in our defined projects
@@ -230,8 +232,85 @@ def build_dashboard():
     
     # Update the priority field in the filtered tasks
     filtered_tasks = update_task_priorities(filtered_tasks)
-    
+
+    return filtered_tasks
+
+
+def build_dashboard():
+
+    filtered_tasks = get_tasks()
     # Create dashboard data structure
     dashboard_data = create_dashboard_data(filtered_tasks)
 
     return dashboard_data
+
+
+def filter_for_old_tasks(tasks):
+
+    old_tasks = []
+    today = get_today_date()
+
+    for task in tasks:
+        due_field = task.get('due')
+        if due_field is None:
+            # No due date → not considered old/today, skip
+            continue
+
+        try:
+            # Todoist can return due as dict or string. Prefer dict['date'] or dict['datetime'].
+            if isinstance(due_field, dict):
+                # date is typically YYYY-MM-DD; datetime may be ISO8601
+                due_str = due_field.get('date') or due_field.get('datetime')
+            elif isinstance(due_field, str):
+                due_str = due_field
+            else:
+                continue
+
+            if not due_str:
+                continue
+
+            # Normalize to date (drop time if present)
+            date_part = due_str.split('T')[0]
+            due_date = datetime.strptime(date_part, '%Y-%m-%d').date()
+
+            if due_date < today:
+                old_tasks.append(task)
+        except (ValueError, KeyError, AttributeError):
+            # Skip tasks with unparsable due values
+            continue
+
+    return old_tasks
+
+def update_task_due_date(task):
+    task_id = task['id']
+    today_str = get_today_date().strftime('%Y-%m-%d')
+    url = f"{TODOIST_TASK_UPDATE_URL}{task_id}"
+
+    payload = {
+        "due_date" : today_str
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        if 200 <= response.status_code < 300:
+            return True
+        else:
+            print(f"Failed to update task {task_id}. Status: {response.status_code}. Body: {response.text}")
+            return False
+    except Exception as e:
+        print(f"Exception updating task {task_id}: {e}")
+        return False
+
+
+def pull_old_tasks_to_today():
+    tasks = get_tasks()
+    today = get_today_date()
+
+    old_tasks = filter_for_old_tasks(tasks)
+
+    for task in old_tasks:
+        update_task_due_date(task)
+        
+ #   print(f"Found {len(old_tasks)} tasks due before today (today={today}).")
+ #   print(json.dumps(old_tasks, indent=4))
+    return old_tasks
