@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mortgage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: #0a0a0a;
+            color: #e8e8e8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+            color: #888;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1px;
+            background: #1a1a1a;
+        }
+
+        .metric-card {
+            background: #0f0f0f;
+            padding: 48px 32px;
+            text-align: center;
+            border-left: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .metric-card:hover {
+            background: #141414;
+            border-left-color: #444;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 16px;
+        }
+
+        .metric-value {
+            font-size: 56px;
+            font-weight: 300;
+            line-height: 1;
+            color: #fff;
+            letter-spacing: -2px;
+        }
+
+        .metric-value.primary {
+            color: #fff;
+        }
+
+        .metric-value.success {
+            color: #fff;
+        }
+
+        .metric-value.warning {
+            color: #fff;
+        }
+
+        .metric-unit {
+            font-size: 20px;
+            font-weight: 300;
+            color: #666;
+            margin-left: 4px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #1a1a1a;
+            margin: 0;
+        }
+
+        /* Optimized for Raspberry Pi Touch Display (800x480) */
+        @media (min-width: 800px) {
+            body {
+                padding: 32px;
+            }
+
+            .header h1 {
+                font-size: 16px;
+                margin-bottom: 40px;
+            }
+
+            .dashboard {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1px;
+            }
+
+            .metric-card {
+                padding: 60px 40px;
+            }
+
+            .metric-value {
+                font-size: 72px;
+                letter-spacing: -3px;
+            }
+
+            .metric-unit {
+                font-size: 24px;
+            }
+
+            .divider {
+                display: none;
+            }
+        }
+
+        /* Landscape orientation optimization */
+        @media (orientation: landscape) and (min-height: 400px) {
+            .container {
+                max-width: 1200px;
+            }
+
+            .metric-value {
+                font-size: 64px;
+            }
+        }
+
+        /* High contrast for better readability on display */
+        @media (prefers-contrast: high) {
+            body {
+                background: #000;
+            }
+
+            .metric-card {
+                background: #000;
+                border-left-color: #fff;
+            }
+
+            .metric-value {
+                color: #fff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Mortgage</h1>
+        </div>
+
+        <div class="dashboard">
+            <div class="metric-card">
+                <div class="metric-label">Days Remaining</div>
+                <div class="metric-value primary">
+                    {{ dashboard_data.days_finish_mortgage }}
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="metric-card">
+                <div class="metric-label">Principal</div>
+                <div class="metric-value success">
+                    ${{ dashboard_data.principal|floatformat:0 }}
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="metric-card">
+                <div class="metric-label">Interest Paid</div>
+                <div class="metric-value warning">
+                    ${{ dashboard_data.interest_paid|floatformat:0 }}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
