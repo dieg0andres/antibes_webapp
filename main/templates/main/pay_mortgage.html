@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Mortgage</title>
     <style>
         * {
@@ -200,5 +203,22 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Auto-refresh every 6 hours with cache busting
+        (function() {
+            const SIX_HOURS = 6 * 60 * 60 * 1000; // milliseconds
+            
+            function refreshPage() {
+                // Add timestamp to force fresh fetch
+                const url = new URL(window.location.href);
+                url.searchParams.set('_t', Date.now());
+                window.location.href = url.toString();
+            }
+            
+            // Set up the refresh timer
+            setTimeout(refreshPage, TWENTY_FOUR_HOURS);
+        })();
+    </script>
 </body>
 </html>
