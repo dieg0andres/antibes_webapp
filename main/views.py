@@ -81,8 +81,8 @@ def pay_mortgage(request):
     # Get today's date
     today = date.today()
     
-    # 1) Calculate days until Jan 1, 2028
-    mortgage_end_date = date(2028, 1, 1)
+    # 1) Calculate days until Dec 1, 2027
+    mortgage_end_date = date(2027, 12, 1)
     days_finish_mortgage = (mortgage_end_date - today).days
     
     # 2) Look up principal based on today's month and year
