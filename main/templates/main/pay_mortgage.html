@@ -205,9 +205,9 @@
     </div>
 
     <script>
-        // Auto-refresh every 6 hours with cache busting
+        // Auto-refresh every 1 hour with cache busting
         (function() {
-            const SIX_HOURS = 6 * 60 * 60 * 1000; // milliseconds
+            const ONE_HOUR = 1 * 60 * 60 * 1000; // milliseconds
             
             function refreshPage() {
                 // Add timestamp to force fresh fetch
@@ -217,7 +217,7 @@
             }
             
             // Set up the refresh timer
-            setTimeout(refreshPage, TWENTY_FOUR_HOURS);
+            setTimeout(refreshPage, ONE_HOUR);
         })();
     </script>
 </body>
