@@ -80,7 +80,6 @@ def pay_mortgage(request):
     
     # Get today's date
     today = date.today()
-    print("Today: ", today)
     
     # 1) Calculate days until Dec 1, 2027
     mortgage_end_date = date(2027, 12, 1)
