@@ -9,7 +9,7 @@ chdir = "/home/diegogalindo/my_stuff/01_Projects/antibes_webapp"
 
 # Bind to a unix socket (recommended) or to 127.0.0.1:8000
 # Use unix socket for Nginx <-> Gunicorn communication
-bind = "unix:/run/gunicorn-antibes/gunicorn.sock"
+# bind = "unix:/run/gunicorn-antibes/gunicorn.sock"
 # Alternative: bind = "127.0.0.1:8000"
 
 # PID file (useful for debugging / scripting)
