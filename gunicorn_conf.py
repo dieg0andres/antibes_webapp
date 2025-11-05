@@ -13,7 +13,13 @@ bind = "unix:/run/gunicorn-antibes/gunicorn.sock"
 # Alternative: bind = "127.0.0.1:8000"
 
 # PID file (useful for debugging / scripting)
-pidfile = "/run/gunicorn-antibes/gunicorn.pid"
+# pidfile = "/run/gunicorn-antibes/gunicorn.pid"
+
+# (temporary, user-writable)
+pidfile = "/tmp/gunicorn-antibes.pid"
+# and optionally use a localhost bind
+bind = "10.0.0.176:8000"
+
 
 ############ Process sizing ############
 # Worker class: 'sync' is default for WSGI. 'gthread' enables threads.
