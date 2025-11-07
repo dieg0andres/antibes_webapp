@@ -8,6 +8,18 @@
     <meta http-equiv="Expires" content="0">
     <title>Mortgage</title>
     <style>
+        @font-face {
+            font-family: 'DigitalSeven';
+            src: url('https://fonts.cdnfonts.com/s/18718/Digital7Mono.eot');
+            src: url('https://fonts.cdnfonts.com/s/18718/Digital7Mono.eot?#iefix') format('embedded-opentype'),
+                 url('https://fonts.cdnfonts.com/s/18718/Digital7Mono.woff2') format('woff2'),
+                 url('https://fonts.cdnfonts.com/s/18718/Digital7Mono.woff') format('woff'),
+                 url('https://fonts.cdnfonts.com/s/18718/Digital7Mono.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -44,6 +56,24 @@
             color: #888;
             letter-spacing: 0.5px;
             text-transform: uppercase;
+        }
+
+        .clock {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            padding: 8px 12px;
+            font-family: 'DigitalSeven', 'Segment7Standard', 'Share Tech Mono', 'Courier New', monospace;
+            font-size: 28px;
+            line-height: 1;
+            letter-spacing: 4px;
+            color: #4af626;
+            text-rendering: optimizeLegibility;
+            pointer-events: none;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
         }
 
         .dashboard {
@@ -140,6 +170,14 @@
             .divider {
                 display: none;
             }
+
+            .clock {
+                top: 32px;
+                left: 32px;
+                font-size: 32px;
+                letter-spacing: 6px;
+                padding: 10px 16px;
+            }
         }
 
         /* Landscape orientation optimization */
@@ -171,10 +209,9 @@
     </style>
 </head>
 <body>
+    <div class="clock" id="clock" aria-live="polite">00:00</div>
     <div class="container">
-        <div class="header">
-            <h1>Mortgage</h1>
-        </div>
+
 
         <div class="dashboard">
             <div class="metric-card">
@@ -205,19 +242,67 @@
     </div>
 
     <script>
-        // Auto-refresh every 1 hour with cache busting
+        // Auto-refresh every 1 hour with cache busting and hard refresh at 00:01
         (function() {
             const ONE_HOUR = 1 * 60 * 60 * 1000; // milliseconds
-            
+
             function refreshPage() {
                 // Add timestamp to force fresh fetch
                 const url = new URL(window.location.href);
                 url.searchParams.set('_t', Date.now());
                 window.location.href = url.toString();
             }
-            
-            // Set up the refresh timer
-            setTimeout(refreshPage, ONE_HOUR);
+
+            function scheduleHourlyRefresh() {
+                setTimeout(refreshPage, ONE_HOUR);
+            }
+
+            function scheduleMidnightRefresh() {
+                const now = new Date();
+                const target = new Date(now);
+                target.setHours(0, 1, 0, 0); // 00:01 local time
+
+                if (target <= now) {
+                    target.setDate(target.getDate() + 1);
+                }
+
+                const timeout = target.getTime() - now.getTime();
+                setTimeout(refreshPage, timeout);
+            }
+
+            scheduleHourlyRefresh();
+            scheduleMidnightRefresh();
+        })();
+
+        // Live clock (hours and minutes) with seven-segment styling
+        (function() {
+            const clockElement = document.getElementById('clock');
+            if (!clockElement) {
+                return;
+            }
+
+            function formatTimeComponent(value) {
+                return value.toString().padStart(2, '0');
+            }
+
+            function updateClock() {
+                const now = new Date();
+                const hours = formatTimeComponent(now.getHours());
+                const minutes = formatTimeComponent(now.getMinutes());
+                clockElement.textContent = `${hours}:${minutes}`;
+            }
+
+            function scheduleNextTick() {
+                const now = new Date();
+                const millisecondsUntilNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+                setTimeout(() => {
+                    updateClock();
+                    setInterval(updateClock, 60 * 1000);
+                }, Math.max(millisecondsUntilNextMinute, 0));
+            }
+
+            updateClock();
+            scheduleNextTick();
         })();
     </script>
 </body>
