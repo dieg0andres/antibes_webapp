@@ -296,4 +296,9 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
+# Django cache  
+tmp/django_cache/*
+!tmp/django_cache/
+!tmp/django_cache/.gitkeep
+
 # End of https://www.toptal.com/developers/gitignore/api/python,django,macos

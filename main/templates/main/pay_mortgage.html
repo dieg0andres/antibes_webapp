@@ -62,18 +62,37 @@
             position: fixed;
             top: 24px;
             left: 24px;
-            padding: 8px 12px;
-            font-family: 'DigitalSeven', 'Segment7Standard', 'Share Tech Mono', 'Courier New', monospace;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
             font-size: 28px;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+            color: #e8e8e8;
             line-height: 1;
-            letter-spacing: 4px;
-            color: #4af626;
-            text-rendering: optimizeLegibility;
             pointer-events: none;
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            box-shadow: none;
+            text-align: left;
+        }
+
+        .outside-temp {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+            color: #e8e8e8;
+            pointer-events: none;
+            text-align: right;
+        }
+
+        .outside-temp-value {
+            font-size: 28px;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+        }
+
+        .outside-temp-unit {
+            font-size: 16px;
+            font-weight: 400;
+            margin-left: 4px;
+            color: #888;
         }
 
         .dashboard {
@@ -175,8 +194,15 @@
                 top: 32px;
                 left: 32px;
                 font-size: 32px;
-                letter-spacing: 6px;
-                padding: 10px 16px;
+            }
+
+            .outside-temp {
+                top: 32px;
+                right: 32px;
+            }
+
+            .outside-temp-value {
+                font-size: 32px;
             }
         }
 
@@ -210,6 +236,12 @@
 </head>
 <body>
     <div class="clock" id="clock" aria-live="polite">00:00</div>
+    <div class="outside-temp" aria-live="polite">
+        <div class="outside-temp-value">
+            {{ dashboard_data.outside_temp }}
+            <span class="outside-temp-unit">°F</span>
+        </div>
+    </div>
     <div class="container">
 
 

@@ -17,10 +17,28 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+CACHE_DIR = BASE_DIR / 'tmp' / 'django_cache'
+if not CACHE_DIR.exists():
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': str(CACHE_DIR),
+        'TIMEOUT': 3600,  # in seconds, so 1 hour
+        'OPTIONS': {
+            'MAX_ENTRIES': 100,
+        },
+    }
+}
+
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 TODOIST_TOKEN = env('TODOIST_TOKEN')
+OWM_API_KEY = env('OWM_API_KEY')
+WEATHER_CACHE_KEY = env('WEATHER_CACHE_KEY')
+WEATHER_CACHE_TTL = env('WEATHER_CACHE_TTL')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
