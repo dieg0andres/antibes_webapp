@@ -44,5 +44,4 @@ def todoist(request):
 
 def pay_mortgage(request):
     dashboard_data = build_mortgage_dashboard()
-    print(dashboard_data)
     return render(request, 'main/pay_mortgage.html', {'dashboard_data': dashboard_data})
