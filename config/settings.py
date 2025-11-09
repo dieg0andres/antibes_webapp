@@ -54,7 +54,7 @@ MOTIVATION_CACHE_TTL = env('MOTIVATION_CACHE_TTL')
 SECRET_KEY = 'django-insecure-j9p!z&w7%irwzz6#*cc6tuw3rnf5gxq#tljufy&f%!-i_7r$%0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
