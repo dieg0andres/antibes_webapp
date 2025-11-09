@@ -36,9 +36,16 @@ env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 TODOIST_TOKEN = env('TODOIST_TOKEN')
+
 OWM_API_KEY = env('OWM_API_KEY')
 WEATHER_CACHE_KEY = env('WEATHER_CACHE_KEY')
 WEATHER_CACHE_TTL = env('WEATHER_CACHE_TTL')
+
+LLM_API_URL = env('LLM_API_URL')
+LLM_MODEL = env('LLM_MODEL')
+MOTIVATION_CACHE_KEY = env('MOTIVATION_CACHE_KEY')
+MOTIVATION_CACHE_TTL = env('MOTIVATION_CACHE_TTL')
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -47,7 +54,7 @@ WEATHER_CACHE_TTL = env('WEATHER_CACHE_TTL')
 SECRET_KEY = 'django-insecure-j9p!z&w7%irwzz6#*cc6tuw3rnf5gxq#tljufy&f%!-i_7r$%0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 

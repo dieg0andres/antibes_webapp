@@ -1,7 +1,9 @@
 from datetime import date
 from typing import Dict, Optional
 from django.core.cache import cache
-from config.settings import WEATHER_CACHE_KEY, WEATHER_CACHE_TTL
+from config.settings import WEATHER_CACHE_KEY, MOTIVATION_CACHE_KEY
+
+
 MORTGAGE_END_DATE = date(2027, 12, 1)
 
 MORTGAGE_SCHEDULE: Dict[str, Dict[str, int]] = {
@@ -63,6 +65,14 @@ def _get_outside_temp_from_cache():
         return cache_data.get('data').get('temp')
     return "Error getting outside temperature from cache"
 
+
+def _get_motivational_phrase_from_cache():
+    cache_data = cache.get(MOTIVATION_CACHE_KEY)
+    if cache_data is not None:
+        return cache_data.get('message')
+    return "Error getting motivational phrase from cache"
+
+
 def build_mortgage_dashboard(today: Optional[date] = None) -> Dict[str, int]:
     current_date = today or date.today()
     snapshot = _resolve_snapshot_for_date(current_date)
@@ -75,5 +85,6 @@ def build_mortgage_dashboard(today: Optional[date] = None) -> Dict[str, int]:
         'principal': snapshot['principal'],
         'interest_paid': snapshot['interest_paid'],
         'outside_temp': int(outside_temp),
+        'motivational_phrase': _get_motivational_phrase_from_cache(),
     }
 
