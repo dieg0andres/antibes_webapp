@@ -17,10 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from main import views
+from django.conf import settings
+from django.views.static import serve
 
 urlpatterns = [
     path('', views.index, name='index'),
     path('todoist/', views.todoist, name='todoist'),
     path('pay_mortgage/', views.pay_mortgage, name='pay_mortgage'),
+    path('giotube/', views.giotube, name='giotube'),
+    path('media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT}),
     path('admin/', admin.site.urls),
 ]

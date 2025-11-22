@@ -1,0 +1,399 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GioTube</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #050505;
+            --accent: #ff0000;
+            --card: #111315;
+            --muted: #92979c;
+            --border: rgba(255, 255, 255, 0.08);
+            --glow: rgba(255, 0, 0, 0.25);
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: white;
+            min-height: 100vh;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .shell {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 20px 40px;
+        }
+
+        header.top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: rgba(5, 5, 5, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            font-size: 1.1rem;
+        }
+
+        .brand .logo-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 20px var(--glow);
+        }
+
+
+        main {
+            padding-top: 20px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            padding: 24px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            background: radial-gradient(circle at top, rgba(255, 0, 0, 0.35), transparent 50%),
+                        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 0, 0, 0.1));
+            margin-bottom: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: clamp(1.9rem, 3vw, 2.8rem);
+        }
+
+        .hero p {
+            margin-top: 12px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .hero-actions button {
+            cursor: pointer;
+            padding: 12px 22px;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ff3b3b, #de1c1c);
+            color: white;
+            box-shadow: 0 10px 25px rgba(255, 59, 59, 0.35);
+            transition: transform 0.2s ease;
+        }
+
+        .hero-actions button:nth-child(2) {
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: none;
+        }
+
+        .hero-actions button:hover {
+            transform: translateY(-2px);
+        }
+
+        .player-panel {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: minmax(0, 2fr) minmax(250px, 1fr);
+            margin-bottom: 24px;
+        }
+
+        .player-card {
+            background: var(--card);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.65);
+        }
+
+        .player-card video {
+            width: 100%;
+            border-radius: 14px;
+            background: black;
+        }
+
+        .player-info {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .player-info h2 {
+            margin: 0;
+            font-size: 1.6rem;
+        }
+
+        .player-info p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        .video-card {
+            border-radius: 18px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s ease, border-color 0.25s ease;
+            position: relative;
+        }
+
+        .video-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .video-card.active {
+            border-color: var(--accent);
+            box-shadow: 0 24px 40px rgba(255, 0, 0, 0.35);
+        }
+
+        .thumbnail {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            width: 100%;
+            overflow: hidden;
+            background: #050505;
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.25s ease;
+        }
+
+        .video-card:hover .thumbnail img {
+            transform: scale(1.04);
+        }
+
+        .duration {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.7);
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .video-copy {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .video-copy h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+
+        .video-copy p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--muted);
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 960px) {
+            .player-panel {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .top-nav {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero {
+                padding: 18px;
+            }
+
+            .player-info {
+                padding: 18px;
+            }
+
+            .video-card {
+                border-radius: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <header class="top-nav">
+            <div class="brand">
+                <span class="logo-dot"></span>
+                <span>GioTube</span>
+            </div>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div>
+                    <p style="text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); font-size: 0.8rem;">Welcome back</p>
+                    <h1>Videos that feel like YouTube, hosted locally.</h1>
+                    <p>GioTube mirrors the familiar brightness of YouTube while keeping everything safe, secured, private (mostly). Have fun!</p>
+                </div>
+                <div class="hero-actions">
+                    <button id="start-watching-btn">Start watching</button>
+                    <button>Browse playlist</button>
+                </div>
+            </section>
+
+            <section class="player-panel">
+                <div class="player-card">
+                    <video id="main-player" controls poster="" preload="metadata">
+                        Your browser does not support the video tag.
+                    </video>
+                    <p id="player-meta" style="margin-top: 12px; color: var(--muted); font-size: 0.85rem;"></p>
+                </div>
+                <div class="player-info">
+                    <h2 id="player-title">Select a video to preview</h2>
+                    <p>Drop a clip in the `/media/videos` directory and GioTube makes it available instantly. Pick a thumbnail to update the spotlight player.</p>
+                </div>
+            </section>
+
+            <section class="video-grid" aria-label="Video library">
+                {% if videos %}
+                    {% for video in videos %}
+                        <article class="video-card" data-index="{{ forloop.counter0 }}" tabindex="0">
+                            <div class="thumbnail">
+                                <img src="{{ video.thumbnail_url }}" alt="{{ video.title }} thumbnail">
+                                <span class="duration">{{ video.extension }}</span>
+                            </div>
+                            <div class="video-copy">
+                                <h3>{{ video.title }}</h3>
+                                <p>{{ video.meta }}</p>
+                            </div>
+                        </article>
+                    {% endfor %}
+                {% else %}
+                    <p class="empty-state">No videos found in the `media/videos` folder yet.</p>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+
+    {{ videos|json_script:"giotube-videos-data" }}
+
+    <script>
+        const gioVideosScript = document.getElementById('giotube-videos-data');
+        const gioVideos = gioVideosScript ? JSON.parse(gioVideosScript.textContent || '[]') : [];
+        const player = document.getElementById('main-player');
+        const playerTitle = document.getElementById('player-title');
+        const playerMeta = document.getElementById('player-meta');
+        const cards = Array.from(document.querySelectorAll('.video-card'));
+        let activeIndex = null;
+
+        function highlightCard(index) {
+            cards.forEach(card => card.classList.remove('active'));
+            if (cards[index]) {
+                cards[index].classList.add('active');
+            }
+        }
+
+        function setActiveVideo(video, index, autoplay = false) {
+            if (!video) {
+                return;
+            }
+
+            player.src = video.video_url;
+            player.poster = video.thumbnail_url;
+            playerTitle.textContent = video.title;
+            playerMeta.textContent = video.meta;
+            player.load();
+            highlightCard(index);
+            activeIndex = index;
+
+            if (autoplay) {
+                player.play().catch(() => {});
+            }
+        }
+
+        cards.forEach((card, index) => {
+            card.addEventListener('click', () => setActiveVideo(gioVideos[index], index));
+            card.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    setActiveVideo(gioVideos[index], index);
+                }
+            });
+        });
+
+        if (gioVideos.length) {
+            setActiveVideo(gioVideos[0], 0);
+        }
+
+        const startBtn = document.getElementById('start-watching-btn');
+        startBtn?.addEventListener('click', () => {
+            if (!gioVideos.length) {
+                return;
+            }
+            let randomIndex = Math.floor(Math.random() * gioVideos.length);
+            if (gioVideos.length > 1 && randomIndex === activeIndex) {
+                randomIndex = (randomIndex + 1) % gioVideos.length;
+            }
+            setActiveVideo(gioVideos[randomIndex], randomIndex, true);
+        });
+    </script>
+</body>
+</html>
