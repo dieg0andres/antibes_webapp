@@ -301,4 +301,25 @@ tmp/django_cache/*
 !tmp/django_cache/
 !tmp/django_cache/.gitkeep
 
+# Ignore everything under media/
+media/*
+
+# But DO NOT ignore these subdirectories themselves
+!media/videos/
+!media/thumbnails/
+
+# Keep the root .gitkeep
+!media/.gitkeep
+
+# Inside videos/, ignore everything...
+media/videos/*
+# ...except its .gitkeep
+!media/videos/.gitkeep
+
+# Inside thumbnails/, ignore everything...
+media/thumbnails/*
+# ...except its .gitkeep
+!media/thumbnails/.gitkeep
+
+
 # End of https://www.toptal.com/developers/gitignore/api/python,django,macos
