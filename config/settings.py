@@ -160,3 +160,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+# Google Sheets service-account config (no env vars)
+TRADING_LOG_SPREADSHEET_ID = env('TRADING_LOG_SPREADSHEET_ID')
+TRADING_LOG_SA_KEY_PATH = os.path.join(BASE_DIR, "secret_store", "gcp-service-account.json")
+TRADING_LOG_WORKSHEET_GID = env('TRADING_LOG_WORKSHEET_GID')
+
+
+# Schwab API config
+SCHWAB_API_KEY = env('SCHWAB_API_KEY')
+SCHWAB_APP_SECRET = env('SCHWAB_APP_SECRET')
+SCHWAB_CALLBACK_URL = env('SCHWAB_CALLBACK_URL')
+SCHWAB_TOKEN_PATH = BASE_DIR / 'secret_store' / 'schwab_token.json'
+
