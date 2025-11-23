@@ -5,7 +5,8 @@
 
 set -o pipefail
 
-PROJECT_DIR="/home/diegogalindo/my_stuff/01_Projects/antibes_webapp"
+#PROJECT_DIR="/home/diegogalindo/my_stuff/01_Projects/antibes_webapp"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_ACT="$PROJECT_DIR/.venv/bin/activate"
 ENVFILE="$PROJECT_DIR/.env"
 LOG_DIR="$PROJECT_DIR/logs"
