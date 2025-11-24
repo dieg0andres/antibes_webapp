@@ -1,6 +1,7 @@
 # main/utils/google_sheets.py
 from __future__ import annotations
 
+import math
 from functools import lru_cache
 from pathlib import Path
 from typing import List, Mapping
@@ -90,7 +91,7 @@ def update_pending_close_prices(
     Only cells whose ticker appears in price_map are updated via batch_update to minimize writes.
     Returns the number of rows that were updated.
     """
-    required_columns = ["TICKER", "STATUS", "OrderAction", "Price"]
+    required_columns = ["TICKER", "STATUS", "OrderAction", "Price", "Qty"]
     missing = [col for col in required_columns if col not in df.columns]
     if missing:
         raise ValueError(f"DataFrame is missing required columns: {', '.join(missing)}")
@@ -114,12 +115,24 @@ def update_pending_close_prices(
         if price is None:
             continue
 
+        qty_value = df.at[row_idx, "Qty"]
+        try:
+            qty_float = float(qty_value)
+        except (TypeError, ValueError):
+            continue
+
+        if qty_float == 0:
+            continue
+
+        qty_sign = math.copysign(1.0, qty_float)
+        signed_price = price * (-qty_sign)
+
         sheet_row = row_idx + 2  # account for header row in sheet
-        df.at[row_idx, "Price"] = price
+        df.at[row_idx, "Price"] = signed_price
         updates.append(
             {
                 "range": f"{price_col_letter}{sheet_row}",
-                "values": [[price]],
+                "values": [[signed_price]],
             }
         )
         updated_rows += 1

@@ -7,6 +7,7 @@ from django.views.decorators.http import require_http_methods
 from main.views_helpers.todoist_helpers import build_dashboard, pull_old_tasks_to_today
 from main.views_helpers.pay_mortgage_helpers import build_mortgage_dashboard
 from main.views_helpers.giotube_helpers import build_giotube_playlist
+from main.views_helpers.trading_helpers import build_trading_dashboard_context
 
 
 # Create your views here.
@@ -49,3 +50,8 @@ def pay_mortgage(request):
 
 def giotube(request):
     return render(request, 'main/giotube.html', {'videos': build_giotube_playlist()})
+
+
+def trading_dashboard(request):
+    context = build_trading_dashboard_context()
+    return render(request, 'main/trading_dashboard.html', context)

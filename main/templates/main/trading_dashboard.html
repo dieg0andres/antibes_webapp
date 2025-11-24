@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Dashboard</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #01030b;
+            --panel: rgba(6, 9, 18, 0.75);
+            --border: rgba(255, 255, 255, 0.09);
+            --text: #f8f9ff;
+            --muted: #9ba1bc;
+            --positive: #5ef9c5;
+            --negative: #ff8f8f;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: radial-gradient(circle at 20% 20%, rgba(94, 249, 197, 0.12), transparent 35%),
+                        radial-gradient(circle at 80% 0%, rgba(82, 170, 255, 0.15), transparent 45%),
+                        var(--bg);
+            color: var(--text);
+        }
+
+        .panel {
+            width: min(720px, 95%);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 36px;
+            padding: clamp(2.25rem, 5vw, 4.25rem);
+            box-shadow: 0 45px 120px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(28px);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin: 0;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 2rem;
+            margin-top: 2.5rem;
+        }
+
+        .metric-card {
+            padding: 1.75rem 1.5rem;
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            background: rgba(255, 255, 255, 0.02);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(94, 249, 197, 0.3), rgba(82, 170, 255, 0.15));
+            -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+
+        .metric-body {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .metric-title {
+            text-transform: uppercase;
+            letter-spacing: 0.28em;
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+
+        .pnl-value {
+            font-size: clamp(2.8rem, 7vw, 4.8rem);
+            font-weight: 600;
+            margin: 0;
+            word-break: break-word;
+        }
+
+        .pnl-value.positive {
+            color: var(--positive);
+        }
+
+        .pnl-value.negative {
+            color: var(--negative);
+        }
+
+        .message {
+            margin-top: 2rem;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+    <main class="panel">
+        <h1>Trading Dashboard</h1>
+        {% if is_stale %}
+            <p class="label">Data unavailable</p>
+            <p class="message">{{ error_message|default:"Trading log data has not been cached yet. Run the update task to refresh it." }}</p>
+        {% else %}
+            <div class="metrics">
+                <div class="metric-card">
+                    <p class="metric-title">Open PnL</p>
+                    <p class="pnl-value {{ pnl_class }}">{{ open_pnl|floatformat:2 }}</p>
+                </div>
+                <div class="metric-card">
+                    <p class="metric-title">Realized PnL</p>
+                    <p class="pnl-value {{ realized_class }}">{{ realized_pnl|floatformat:2 }}</p>
+                </div>
+            </div>
+        {% endif %}
+    </main>
+</body>
+</html>
+

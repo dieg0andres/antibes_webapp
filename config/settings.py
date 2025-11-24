@@ -54,7 +54,7 @@ MOTIVATION_CACHE_TTL = env('MOTIVATION_CACHE_TTL')
 SECRET_KEY = 'django-insecure-j9p!z&w7%irwzz6#*cc6tuw3rnf5gxq#tljufy&f%!-i_7r$%0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -166,6 +166,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 TRADING_LOG_SPREADSHEET_ID = env('TRADING_LOG_SPREADSHEET_ID')
 TRADING_LOG_SA_KEY_PATH = os.path.join(BASE_DIR, "secret_store", "gcp-service-account.json")
 TRADING_LOG_WORKSHEET_GID = env('TRADING_LOG_WORKSHEET_GID')
+TRADING_LOG_CACHE_KEY = env('TRADING_LOG_CACHE_KEY')
+TRADING_LOG_CACHE_TTL = env('TRADING_LOG_CACHE_TTL')
 
 
 # Schwab API config

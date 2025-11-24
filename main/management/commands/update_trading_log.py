@@ -1,3 +1,7 @@
+import pickle
+
+from django.conf import settings
+from django.core.cache import cache
 from django.core.management.base import BaseCommand
 
 from main.utils.trading_log import (
@@ -44,5 +48,19 @@ class Command(BaseCommand):
         tickers = df.loc[mask, "TICKER"].tolist()
         price_map = get_latest_prices(tickers)
         updated_rows = update_pending_close_prices(trading_log_worksheet, df, price_map, mask=mask)
+
+        cache_key = getattr(settings, "TRADING_LOG_CACHE_KEY", None)
+        cache_ttl = getattr(settings, "TRADING_LOG_CACHE_TTL", None)
+        if cache_key:
+            timeout = None
+            if cache_ttl is not None:
+                try:
+                    timeout = int(cache_ttl)
+                except (TypeError, ValueError):
+                    timeout = None
+            cache.set(cache_key, pickle.dumps(df), timeout=timeout)
+            # Temporary debug output for troubleshooting; remove when no longer needed.
+           # self.stdout.write("Cached trading log DataFrame:")
+           # self.stdout.write(df.to_string())
 
         self.stdout.write(self.style.SUCCESS(f"Trading log updated ({updated_rows} rows changed)"))

@@ -25,6 +25,7 @@ urlpatterns = [
     path('todoist/', views.todoist, name='todoist'),
     path('pay_mortgage/', views.pay_mortgage, name='pay_mortgage'),
     path('giotube/', views.giotube, name='giotube'),
+    path('trading/dashboard/', views.trading_dashboard, name='trading_dashboard'),
     path('media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT}),
     path('admin/', admin.site.urls),
 ]
