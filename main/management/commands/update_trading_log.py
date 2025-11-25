@@ -60,7 +60,7 @@ class Command(BaseCommand):
                     timeout = None
             cache.set(cache_key, pickle.dumps(df), timeout=timeout)
             # Temporary debug output for troubleshooting; remove when no longer needed.
-           # self.stdout.write("Cached trading log DataFrame:")
-           # self.stdout.write(df.to_string())
+            #self.stdout.write(self.style.SUCCESS("Cached trading log DataFrame:"))
+            #self.stdout.write(df.to_string())
 
         self.stdout.write(self.style.SUCCESS(f"Trading log updated ({updated_rows} rows changed)"))

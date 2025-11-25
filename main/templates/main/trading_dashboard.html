@@ -54,7 +54,7 @@
 
         .metrics {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 2rem;
             margin-top: 2.5rem;
         }
@@ -131,6 +131,10 @@
                 <div class="metric-card">
                     <p class="metric-title">Realized PnL</p>
                     <p class="pnl-value {{ realized_class }}">{{ realized_pnl|floatformat:2 }}</p>
+                </div>
+                <div class="metric-card">
+                    <p class="metric-title">Fees</p>
+                    <p class="pnl-value negative">{{ total_fees|floatformat:2 }}</p>
                 </div>
             </div>
         {% endif %}

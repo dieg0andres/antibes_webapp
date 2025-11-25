@@ -83,6 +83,14 @@ def _build_positions_preview(df: pd.DataFrame, limit: int = 6) -> List[dict]:
     return preview
 
 
+def _compute_total_fees(df: pd.DataFrame) -> float:
+    if df.empty or "Fees" not in df.columns:
+        return 0.0
+    fees = pd.to_numeric(df["Fees"], errors="coerce")
+    total = fees.sum(skipna=True)
+    return float(total) if pd.notna(total) else 0.0
+
+
 def build_trading_dashboard_context() -> dict:
     df, error = _load_cached_dataframe()
     if df is None:
@@ -90,6 +98,7 @@ def build_trading_dashboard_context() -> dict:
 
     open_pnl = _compute_status_pnl(df, "Open")
     realized_pnl = _compute_status_pnl(df, "Closed")
+    total_fees = _compute_total_fees(df)
     positions_preview = _build_positions_preview(df)
     pnl_class = "positive" if open_pnl >= 0 else "negative"
     realized_class = "positive" if realized_pnl >= 0 else "negative"
@@ -100,6 +109,7 @@ def build_trading_dashboard_context() -> dict:
         "pnl_class": pnl_class,
         "realized_pnl": realized_pnl,
         "realized_class": realized_class,
+        "total_fees": total_fees,
         "open_positions": positions_preview,
         "error_message": None,
     }
