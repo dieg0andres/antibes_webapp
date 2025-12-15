@@ -5,6 +5,17 @@ This is a Django project (antibes_webapp). We are extracting trading-related log
 - `options_trading/` MUST be Django-agnostic.
 - Django wiring lives in `main/integrations/trading_wiring.py`.
 
+## Current refactor goal (legacy cleanup)
+Remove legacy wrapper modules once all call sites are migrated:
+- main/utils/schwab_client.py
+- main/utils/schwab_prices.py
+- main/utils/trading_log.py
+
+All Django code should import:
+- main/integrations/trading_wiring.py for Django-aware entry points (client factory, get_client, get_latest_prices, get_trading_log_worksheet)
+- options_trading.* only for pure functions that require no Django settings
+
+
 ## Hard constraints
 - Do NOT import `django.*` or `config.settings` anywhere under `options_trading/`.
 - Keep diffs minimal (no formatting-only refactors).
@@ -24,3 +35,5 @@ Run after changes:
 - `python manage.py check`
 - `python manage.py run_schwab_manual_auth --help`
 - `python -c "from options_trading.wiring.env import make_client_factory_from_env; print('ok')"`
+- rg -n "main\.utils\.(schwab_client|schwab_prices|trading_log)" .   # should return no matches
+

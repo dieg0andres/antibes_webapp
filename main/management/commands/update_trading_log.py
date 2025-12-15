@@ -4,12 +4,8 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.management.base import BaseCommand
 
-from main.utils.trading_log import (
-    get_trading_log_worksheet,
-    read_df,
-    update_pending_close_prices,
-)
-from main.utils.schwab_prices import get_latest_prices
+from main.integrations.trading_wiring import get_latest_prices, get_trading_log_worksheet
+from options_trading.sheets.trading_log import read_df, update_pending_close_prices
 
 
 def _get_pending_close_mask(df):
