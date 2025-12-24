@@ -329,5 +329,8 @@ secret_store/
 # logs
 logs/
 
+options_trading/scratch/
+
+
 
 # End of https://www.toptal.com/developers/gitignore/api/python,django,macos
