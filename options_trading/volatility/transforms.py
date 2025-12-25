@@ -11,12 +11,91 @@ Responsibilities:
 
 from __future__ import annotations
 
+import logging
 import warnings
+from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 from .calendar import SessionSpec
+
+LOG_PATH = Path("logs") / "options_trading_volatility.log"
+
+
+def _get_dq_logger() -> logging.Logger:
+    """Return a file-logging data-quality logger (idempotent)."""
+    logger = logging.getLogger("options_trading.data_quality")
+    target = LOG_PATH.resolve()
+    keep_first = True
+    for h in list(logger.handlers):
+        if isinstance(h, logging.FileHandler) and Path(getattr(h, "baseFilename", "")).resolve() == target:
+            if keep_first:
+                keep_first = False
+            else:
+                logger.removeHandler(h)
+    existing = [
+        h for h in logger.handlers if isinstance(h, logging.FileHandler) and Path(getattr(h, "baseFilename", "")).resolve() == target
+    ]
+    if not existing:
+        LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        fh = logging.FileHandler(target, mode="a", encoding="utf-8")
+        fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+        logger.addHandler(fh)
+        logger.setLevel(logging.INFO)
+        logger.propagate = False
+    return logger
+
+
+def _log_block(logger: logging.Logger, level: int, header: str, lines: list[str]) -> None:
+    """Log a header and indented detail lines so each line is timestamped."""
+    logger.log(level, header)
+    for line in lines:
+        logger.log(level, f"  {line}")
+
+
+def _format_bad_rows(df: pd.DataFrame, mask: pd.Series, n: int = 5) -> list[str]:
+    bad = df.loc[mask, ["open", "high", "low", "close"]].head(n)
+    lines = []
+    for ts, row in bad.iterrows():
+        lines.append(
+            f"ts={ts} open={row['open']} high={row['high']} low={row['low']} close={row['close']} "
+            f"(open-high={row['open']-row['high']:.4g}, low-open={row['low']-row['open']:.4g})"
+        )
+    more = mask.sum() - len(bad)
+    if more > 0:
+        lines.append(f"... plus {more} more rows")
+    return lines
+
+
+def _format_bad_deltas(
+    index: pd.DatetimeIndex,
+    same_session_mask: np.ndarray | pd.Series,
+    minutes: pd.Series,
+    bad_mask: np.ndarray | pd.Series,
+    n: int = 5,
+) -> list[str]:
+    same = np.asarray(same_session_mask, dtype=bool)
+    within_pos = np.flatnonzero(same)
+    if within_pos.size == 0:
+        return ["(no within-session deltas to validate)"]
+
+    bad_within = np.asarray(getattr(bad_mask, "to_numpy", lambda: bad_mask)(), dtype=bool)
+    if bad_within.size != within_pos.size:
+        return [f"(unable to align bad mask: bad_within={bad_within.size}, within_pos={within_pos.size})"]
+
+    bad_pos = within_pos[bad_within]
+    mins = minutes.to_numpy()
+
+    lines = []
+    for k in bad_pos[:n]:
+        prev_ts = index[k]
+        curr_ts = index[k + 1]
+        lines.append(f"prev={prev_ts} curr={curr_ts} delta_min={float(mins[k]):.4g}")
+    if bad_pos.size > n:
+        lines.append(f"... plus {bad_pos.size - n} more deltas")
+    return lines
 
 
 def ensure_tz_aware_utc_index(df: pd.DataFrame, tz: str = "UTC") -> pd.DataFrame:
@@ -161,10 +240,21 @@ def infer_bar_minutes(
     if len(within_minutes) > 0:
         mode = pd.Series(within_minutes).mode().iloc[0]
         deviations = (within_minutes - mode).abs()
-        if not (deviations <= tolerance * mode).all():
+        bad_mask = deviations > tolerance * mode
+        if bad_mask.any():
+            bad_count = int(bad_mask.sum())
+            total = len(within_minutes)
+            log_hint = f"(see {LOG_PATH.as_posix()})"
+            header = (
+                f"INTRADAY_IRREGULAR_SPACING strict={strict} mode_minutes={mode:.4g} "
+                f"tol={tolerance:.4g} bad_deltas={bad_count}/{total} {log_hint}"
+            )
+            lines = _format_bad_deltas(index, same_session, minutes, bad_mask, n=5)
             if strict:
-                raise ValueError("Irregular timestamp spacing detected within a session beyond tolerance")
-            warnings.warn("Irregular timestamp spacing detected within a session beyond tolerance", UserWarning)
+                _log_block(_get_dq_logger(), logging.ERROR, header, lines)
+                raise ValueError(header)
+            warnings.warn(header, UserWarning)
+            _log_block(_get_dq_logger(), logging.WARNING, header, lines)
 
     return float(mode)
 
@@ -209,20 +299,6 @@ def aggregate_to_sessions(df: pd.DataFrame, session: SessionSpec, strict: bool =
     return agg_df
 
 
-def _format_bad_rows(df: pd.DataFrame, mask: pd.Series, n: int = 5) -> str:
-    bad = df.loc[mask, ["open", "high", "low", "close"]].head(n)
-    # render compactly
-    lines = []
-    for ts, row in bad.iterrows():
-        lines.append(
-            f"{ts}: open={row['open']}, high={row['high']}, low={row['low']}, close={row['close']}"
-        )
-    more = mask.sum() - len(bad)
-    if more > 0:
-        lines.append(f"... plus {more} more rows")
-    return "\n".join(lines)
-
-
 def validate_ohlc(df: pd.DataFrame, strict: bool = True) -> None:
     """Validate positivity and range consistency for OHLC data.
 
@@ -241,26 +317,35 @@ def validate_ohlc(df: pd.DataFrame, strict: bool = True) -> None:
     if (df["high"] < df["low"]).any():
         raise ValueError("Found high < low")
 
-    if strict:
-        open_outside = (df["open"] < df["low"]) | (df["open"] > df["high"])
-        if open_outside.any():
-            detail = _format_bad_rows(df, open_outside)
-            raise ValueError(
-                f"Found open outside [low, high] for {int(open_outside.sum())} rows.\n{detail}"
-            )
+    open_outside = (df["open"] < df["low"]) | (df["open"] > df["high"])
+    close_outside = (df["close"] < df["low"]) | (df["close"] > df["high"])
 
-        close_outside = (df["close"] < df["low"]) | (df["close"] > df["high"])
+    if strict:
+        if open_outside.any():
+            header = f"Found open outside [low, high] for {int(open_outside.sum())} rows."
+            detail_lines = _format_bad_rows(df, open_outside)
+            _log_block(_get_dq_logger(), logging.ERROR, header, detail_lines)
+            raise ValueError(header + "\n" + "\n".join(detail_lines))
+
         if close_outside.any():
-            detail = _format_bad_rows(df, close_outside)
-            raise ValueError(
-                f"Found close outside [low, high] for {int(close_outside.sum())} rows.\n{detail}"
-            )
+            header = f"Found close outside [low, high] for {int(close_outside.sum())} rows."
+            detail_lines = _format_bad_rows(df, close_outside)
+            _log_block(_get_dq_logger(), logging.ERROR, header, detail_lines)
+            raise ValueError(header + "\n" + "\n".join(detail_lines))
     else:
-        # optionally just warn if you want visibility
-        open_outside = (df["open"] < df["low"]) | (df["open"] > df["high"])
-        close_outside = (df["close"] < df["low"]) | (df["close"] > df["high"])
         if open_outside.any() or close_outside.any():
-            warnings.warn(
-                f"OHLC consistency issue: open_outside={int(open_outside.sum())}, close_outside={int(close_outside.sum())}",
-                UserWarning,
+            log_hint = f"(see {LOG_PATH.as_posix()})"
+            msg = (
+                f"OHLC_INCONSISTENCY strict=False total_rows={len(df)} "
+                f"open_outside={int(open_outside.sum())} close_outside={int(close_outside.sum())} "
+                f"{log_hint}"
             )
+            warnings.warn(msg, UserWarning)
+            detail_lines: list[str] = []
+            if open_outside.any():
+                detail_lines.append("examples_open:")
+                detail_lines.extend(_format_bad_rows(df, open_outside))
+            if close_outside.any():
+                detail_lines.append("examples_close:")
+                detail_lines.extend(_format_bad_rows(df, close_outside))
+            _log_block(_get_dq_logger(), logging.WARNING, msg, detail_lines)

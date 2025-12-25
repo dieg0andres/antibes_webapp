@@ -116,5 +116,3 @@ Core outputs (typical):
 - Provide a convenience wrapper under options_trading (still Django-agnostic) that accepts a ticker and uses injected loader callables to fetch candles, then calls the pure panel function.
 - Do NOT hardcode Django settings or global Schwab clients inside the panel module.
 
-### Tests
-- Panel tests will be added in a separate follow-up pass (do not implement tests in the initial panel implementation unless explicitly requested).
