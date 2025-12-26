@@ -101,18 +101,19 @@ def implied_vol(
     # Work on a copy so we can modify sigma
     p = BSParams(**{**params.__dict__})
 
-    # No-arbitrage lower bound for European options (discounted intrinsic).
-    # NOTE: A European option can be below spot-intrinsic (K-S for puts, S-K for calls) when r/q != 0,
-    # because early exercise is not allowed. Use discounted bounds instead.
-    if p.T <= 1e-8:
-        raise ValueError("T is too close to 0: implied vol is undefined at expiry")
+    # Intrinsic value is a lower bound on price
+    intrinsic = bs_price(BSParams(
+        S=p.S,
+        K=p.K,
+        T=0.0,              # force intrinsic
+        sigma=1.0,          # unused since T=0
+        type=p.type,
+        r=p.r,
+        q=p.q,
+    ))
 
-    F0 = p.S * math.exp(-p.q * p.T)
-    PVK = p.K * math.exp(-p.r * p.T)
-    lower_bound = max(0.0, F0 - PVK) if p.type == "call" else max(0.0, PVK - F0)
-
-    if target_price < lower_bound - 1e-12:
-        raise ValueError("target_price is below intrinsic value (discounted lower bound): no real implied vol")
+    if target_price < intrinsic:
+        raise ValueError("target_price is below intrinsic value: no real implied vol")
 
     # Set up bracket
     p.sigma = sigma_low

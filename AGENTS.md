@@ -105,12 +105,31 @@ Core outputs (typical):
 - optional RV rank/percentile on vol_yz_W with lookback (e.g., 252) for configured rank_windows
 - tail frequency (% |r| > 2σ, >3σ) and leverage-effect correlation
 - regime label (SMA200 + is_bull_200) as lightweight conditioning
+- conditional leverage betas (optional): rolling β⁻/β⁺ of Δlog(vol_yz_20) on returns for ret<0 vs ret>0, plus counts n_neg/n_pos
 
 ### Hard constraints (Panel)
 - MUST remain Django-agnostic (no `django.*` imports).
 - No new third-party dependencies beyond numpy/pandas.
 - Provide thorough docstrings explaining behavior and design decisions.
 - Keep diffs minimal; avoid unrelated refactors.
+
+
+ ## Implied Volatility (IV) calculation (options_trading/volatility/iv_calculation.py)
+
+### Goal
+Compute constant-maturity ATM implied volatility (IVX) from an option chain snapshot (Schwab dict or normalized DataFrame).
+Default uses IV computed via Black–Scholes inversion of market prices (mid then mark), with optional vendor IV comparison.
+
+### Hard constraints (IV)
+- MUST remain Django-agnostic (no django imports).
+- No new third-party dependencies beyond numpy/pandas.
+- Provide thorough docstrings including formulas and unit conventions (decimals vs percent).
+
+### Notes
+- Output IV values are annualized decimals (e.g., 0.18 = 18%).
+- Supports user-defined target maturity via `target_dte_days` (default 30).
+- Interpolate in total variance: TV = sigma^2 * T.
+
 
 ### Wrapper
 - Provide a convenience wrapper under options_trading (still Django-agnostic) that accepts a ticker and uses injected loader callables to fetch candles, then calls the pure panel function.

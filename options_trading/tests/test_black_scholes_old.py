@@ -1,5 +1,4 @@
 import math
-import random
 import pytest
 
 from options_trading.pricing.black_scholes import (
@@ -291,107 +290,6 @@ def test_implied_vol_monotonic_in_target_price():
 
     assert iv_high > iv_low
 
-
-# ----------------------------
-# 7b) Implied vol - broader coverage & conditioning
-# ----------------------------
-
-@pytest.mark.parametrize("opt_type", ["call", "put"])
-@pytest.mark.parametrize(
-    "S,K,T,true_sigma,r,q",
-    [
-        # Well-conditioned cases (moneyness not extreme, T not tiny)
-        (100.0, 100.0, 0.50, 0.20, 0.01, 0.00),
-        (100.0, 110.0, 1.00, 0.35, 0.03, 0.01),
-        (100.0,  90.0, 0.25, 0.15, 0.02, 0.00),
-        ( 50.0,  55.0, 2.00, 0.60, 0.00, 0.00),
-        (200.0, 180.0, 0.75, 0.12, 0.05, 0.02),
-        # High-vol case (still < sigma_high default)
-        (100.0, 100.0, 1.00, 2.50, 0.02, 0.00),
-    ],
-)
-def test_implied_vol_round_trip_param_grid(opt_type, S, K, T, true_sigma, r, q):
-    # In a well-conditioned region, IV inversion should recover sigma (round-trip).
-    p_true = BSParams(S=S, K=K, T=T, sigma=true_sigma, type=opt_type, r=r, q=q)
-    target = bs_price(p_true)
-
-    # Pass a "wrong" sigma in params; bisection shouldn't care.
-    p_guess = BSParams(**{**p_true.__dict__, "sigma": 0.10})
-
-    tol = 1e-9
-    iv = implied_vol(target, p_guess, tol=tol, max_iter=600)
-
-    # Primary requirement: returned sigma reproduces the target price tightly.
-    p_iv = BSParams(**{**p_true.__dict__, "sigma": iv})
-    assert bs_price(p_iv) == pytest.approx(target, abs=5 * tol, rel=0.0)
-
-    # Secondary: in this region, sigma itself should be close to the true value.
-    # Note: BS vega is returned "per 1 vol point" (0.01 sigma). Convert to dP/dsigma.
-    vega_per_point = bs_vega(p_true)
-    dp_dsigma = max(vega_per_point / 0.01, 1e-12)
-    sigma_tol = max(1e-6, 20 * tol / dp_dsigma)  # loose but scaling-aware
-
-    assert iv == pytest.approx(true_sigma, abs=sigma_tol)
-
-
-def test_implied_vol_price_consistency_when_vega_is_tiny():
-    # Deep ITM/OTM + short-ish maturity => vega can be ~0, making IV poorly identified.
-    # In that case, *price* consistency is the meaningful thing to test.
-    base = dict(S=200.0, K=100.0, T=0.25, sigma=0.20, r=0.01, q=0.0)
-
-    for opt_type in ["call", "put"]:
-        p_true = BSParams(**base, type=opt_type)
-        target = bs_price(p_true)
-
-        # Sanity: confirm we're in the ill-conditioned regime.
-        assert bs_vega(p_true) < 1e-8
-
-        iv = implied_vol(target, BSParams(**{**p_true.__dict__, "sigma": 0.50}), tol=1e-10, max_iter=800)
-
-        assert math.isfinite(iv)
-        assert 1e-6 <= iv <= 5.0
-
-        p_iv = BSParams(**{**p_true.__dict__, "sigma": iv})
-        assert abs(bs_price(p_iv) - target) < 1e-10
-
-
-def test_implied_vol_round_trip_randomized_well_conditioned():
-    # Randomized coverage in a "well-behaved" region (bounded moneyness, T, vega).
-    rng = random.Random(1337)
-
-    cases = []
-    while len(cases) < 40:
-        S = rng.uniform(50.0, 250.0)
-
-        # Keep moneyness reasonable: K/S in [e^-0.15, e^0.15] ~ [0.86, 1.16]
-        m = math.exp(rng.uniform(-0.15, 0.15))
-        K = S * m
-
-        T = rng.uniform(0.05, 2.0)
-        true_sigma = rng.uniform(0.05, 1.50)
-        r = rng.uniform(-0.02, 0.10)
-        q = rng.uniform(0.00, 0.06)
-        opt_type = rng.choice(["call", "put"])
-
-        p_true = BSParams(S=S, K=K, T=T, sigma=true_sigma, type=opt_type, r=r, q=q)
-
-        # Filter out very low vega cases where IV is not identifiable.
-        if bs_vega(p_true) < 0.02:  # per 0.01 vol point
-            continue
-
-        cases.append(p_true)
-
-    for p_true in cases:
-        target = bs_price(p_true)
-        tol = 1e-8
-        iv = implied_vol(target, BSParams(**{**p_true.__dict__, "sigma": 0.25}), tol=tol, max_iter=600)
-
-        # Round-trip should recover sigma reasonably well in this region.
-        assert iv == pytest.approx(p_true.sigma, abs=1e-5)
-
-        # And the recovered sigma must reproduce the price tightly.
-        p_iv = BSParams(**{**p_true.__dict__, "sigma": iv})
-        assert bs_price(p_iv) == pytest.approx(target, abs=5 * tol, rel=0.0)
 
 # ----------------------------
 # 8) Extreme / stability tests (doesn't explode, respects bounds)

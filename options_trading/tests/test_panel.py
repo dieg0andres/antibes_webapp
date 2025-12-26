@@ -261,6 +261,10 @@ def test_panel_expected_columns_present_basic():
         "p_tail3_30",
         "dlogvol_yz_20",
         "corr_ret_dlogvol_yz20_20",
+        "beta_ret_dlogvol_yz20_neg_20",
+        "beta_ret_dlogvol_yz20_pos_20",
+        "n_ret_neg_20",
+        "n_ret_pos_20",
         "sma_10",
         "is_bull_10",
     ]

@@ -108,6 +108,8 @@ def volatility_state_panel(
     tail_lookback: int = 252,
     corr_window: int = 120,
     corr_vol_window: int = 20,
+    include_conditional_betas: bool = True,
+    conditional_beta_min_count: int = 20,
     include_regime: bool = True,
     trend_ma_window: int = 200,
 ) -> VolatilityStatePanelResult:
@@ -160,6 +162,11 @@ def volatility_state_panel(
         Rolling window for ret vs dlogvol correlation.
     corr_vol_window : int
         Vol window (must be in rv_windows) used for dlogvol in correlation.
+    include_conditional_betas : bool
+        Whether to compute conditional betas (neg/pos returns) on ret vs dlogvol.
+    conditional_beta_min_count : int
+        Minimum subset size within the rolling window to report beta; clamped to
+        corr_window internally.
     include_regime : bool
         Whether to compute simple SMA-based bull/bear indicator.
     trend_ma_window : int
@@ -195,6 +202,10 @@ def volatility_state_panel(
         * rv_pct = mean(vol_window <= vol_t) over lookback
         * tail2/3 freq = rolling mean of 1{|ret| > k*sigma_ref}
         * corr = rolling corr(ret_log, dlogvol)
+        * dlogvol_t = ln(vol_yz_vw,t) - ln(vol_yz_vw,t-1)
+        * beta_S = cov_S(ret_log, dlogvol) / var_S(ret_log) for subset S (ret<0 or ret>0),
+          with intercept: cov = sxy - (sx*sy)/n, var = sx2 - (sx*sx)/n; counts reported as
+          n_ret_neg_cw / n_ret_pos_cw; beta set to NaN when count < min_count or var<=0.
     """
 
     rv_windows_set = set(rv_windows)
@@ -204,6 +215,9 @@ def volatility_state_panel(
         raise ValueError("rank_windows must be a subset of rv_windows")
     if corr_vol_window not in rv_windows_set:
         raise ValueError("corr_vol_window must be in rv_windows")
+    if conditional_beta_min_count < 2:
+        raise ValueError("conditional_beta_min_count must be at least 2")
+    eff_min_beta = min(conditional_beta_min_count, corr_window)
 
     # Ingest session-level data
     session_df = candles_to_df(session_data, strict=strict)
@@ -335,6 +349,42 @@ def volatility_state_panel(
     )
     leverage_cols.extend([dlogvol_col, corr_col])
 
+    # Conditional betas (with intercept) on ret vs dlogvol
+    cond_beta_cols = []
+    if include_conditional_betas:
+        x = panel["ret_log"]
+        y = panel[dlogvol_col]
+        valid = x.notna() & y.notna()
+        neg = valid & (x < 0)
+        pos = valid & (x > 0)
+
+        def _rolling_beta(mask: pd.Series) -> tuple[pd.Series, pd.Series]:
+            n = mask.astype(int).rolling(corr_window, min_periods=corr_window).sum()
+            sx = x.where(mask, 0.0).rolling(corr_window, min_periods=corr_window).sum()
+            sy = y.where(mask, 0.0).rolling(corr_window, min_periods=corr_window).sum()
+            sx2 = (x.where(mask, 0.0) ** 2).rolling(corr_window, min_periods=corr_window).sum()
+            sxy = (x.where(mask, 0.0) * y.where(mask, 0.0)).rolling(corr_window, min_periods=corr_window).sum()
+            cov = sxy - (sx * sy) / n
+            var = sx2 - (sx * sx) / n
+            beta = cov / var
+            beta = beta.where((n >= eff_min_beta) & (var > 0))
+            return beta, n
+
+        beta_neg, n_neg = _rolling_beta(neg)
+        beta_pos, n_pos = _rolling_beta(pos)
+
+        beta_neg_col = f"beta_ret_dlogvol_yz{corr_vol_window}_neg_{corr_window}"
+        beta_pos_col = f"beta_ret_dlogvol_yz{corr_vol_window}_pos_{corr_window}"
+        n_neg_col = f"n_ret_neg_{corr_window}"
+        n_pos_col = f"n_ret_pos_{corr_window}"
+
+        panel[beta_neg_col] = beta_neg
+        panel[beta_pos_col] = beta_pos
+        panel[n_neg_col] = n_neg
+        panel[n_pos_col] = n_pos
+
+        cond_beta_cols.extend([beta_neg_col, beta_pos_col, n_neg_col, n_pos_col])
+
     # Regime (simple SMA)
     regime_cols = []
     if include_regime:
@@ -362,6 +412,8 @@ def volatility_state_panel(
         "tail_lookback": tail_lookback,
         "corr_window": corr_window,
         "corr_vol_window": corr_vol_window,
+        "include_conditional_betas": include_conditional_betas,
+        "conditional_beta_min_count": conditional_beta_min_count,
         "include_regime": include_regime,
         "trend_ma_window": trend_ma_window,
         "adjustment_factor_provided": adjustment_factor is not None,
@@ -378,6 +430,7 @@ def volatility_state_panel(
         + pct_cols
         + tail_cols
         + leverage_cols
+        + cond_beta_cols
         + regime_cols
     )
     coverage = _coverage_for_columns(panel, coverage_cols)
