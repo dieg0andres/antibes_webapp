@@ -21,7 +21,7 @@ fi
 # Defaults (override by exporting env vars or passing args)
 RUN_LABEL="${RUN_LABEL:-daily_close}"
 TARGET_DTES="${TARGET_DTES:-30 45}"
-STRIKE_COUNT="${STRIKE_COUNT:-12}"
+STRIKE_COUNT="${STRIKE_COUNT:-18}"
 STRICT_FLAG="${STRICT_FLAG:-}"   # set STRICT_FLAG="--strict" if you want strict mode
 SYMBOL="${SYMBOL:-}"             # set SYMBOL="SPY" for debug
 

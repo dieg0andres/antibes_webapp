@@ -262,8 +262,8 @@ def _fetch_option_chain(
     symbol: str,
     *,
     underlying: float,
-    from_date: date,
-    to_date: date,
+    from_date: date | None = None,
+    to_date: date | None = None,
     strike_count: int,
 ) -> dict:
     """
@@ -416,8 +416,13 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("No active symbols found."))
             return
 
+        # "run day" for filenames/logging (daily_close convention)
         from_dt = _last_business_day(_today_utc_date())
-        to_dt = from_dt + timedelta(days=int(max(target_dtes)) + 30)
+
+        # Option-chain date filters are *expiration-date* filters.
+        # Empirically, the endpoint is more reliable if fromDate is not in the past.
+        chain_from_dt = max(from_dt, _today_utc_date())
+        chain_to_dt = chain_from_dt + timedelta(days=int(max(target_dtes)) + 38)
 
         panel_kwargs = dict(
             rv_windows=(10, 20, 60, 120),
@@ -466,8 +471,8 @@ class Command(BaseCommand):
                     client,
                     symbol,
                     underlying=underlying,
-                    from_date=from_dt,
-                    to_date=to_dt,
+                    from_date=chain_from_dt,
+                    to_date=chain_to_dt,
                     strike_count=strike_count,
                 )
 
