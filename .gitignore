@@ -331,6 +331,8 @@ logs/
 
 options_trading/scratch/
 
+# Local pipeline artifacts / raw market data
+data_store/
 
 
 # End of https://www.toptal.com/developers/gitignore/api/python,django,macos

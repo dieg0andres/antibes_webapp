@@ -113,6 +113,11 @@ Core outputs (typical):
 - Provide thorough docstrings explaining behavior and design decisions.
 - Keep diffs minimal; avoid unrelated refactors.
 
+### Wrapper
+- Provide a convenience wrapper under options_trading (still Django-agnostic) that accepts a ticker and uses injected loader callables to fetch candles, then calls the pure panel function.
+- Do NOT hardcode Django settings or global Schwab clients inside the panel module.
+
+
 
  ## Implied Volatility (IV) calculation (options_trading/volatility/iv_calculation.py)
 
@@ -131,7 +136,19 @@ Default uses IV computed via Black–Scholes inversion of market prices (mid the
 - Interpolate in total variance: TV = sigma^2 * T.
 
 
-### Wrapper
-- Provide a convenience wrapper under options_trading (still Django-agnostic) that accepts a ticker and uses injected loader callables to fetch candles, then calls the pure panel function.
-- Do NOT hardcode Django settings or global Schwab clients inside the panel module.
+## IV/RV Panel (options_trading/volatility/iv_rv_panel.py)
 
+### Goal
+Create a pure-Python “IV/RV Panel” that composes:
+- realized-volatility state panel (volatility_state_panel)
+- constant-maturity ATM implied vol (ivx_atm)
+
+It must:
+- attach the full VolatilityStatePanelResult and IVXATMResult
+- compute snapshot metrics at the latest timestamp:
+  - rv20 (default from vol_primary_20, configurable to vol_yz_20)
+  - vrp = ivx - rv20
+  - iv_over_rv = ivx / rv20
+  - var_vrp = ivx^2 - rv20^2
+- be Django-agnostic and dependency-free beyond numpy/pandas.
+- provide thorough docstrings with formulas and behavior, and return flags/notes when IV or RV is unavailable.

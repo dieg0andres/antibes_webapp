@@ -92,7 +92,15 @@ class IVXATMResult:
 def _to_decimal_rate(x: float | None) -> float | None:
     if x is None:
         return None
-    return x / 100.0 if x > 1.0 else x
+    x = float(x)
+    if not math.isfinite(x) or x < 0:
+        return None
+    if x > 1.0:
+        return x / 100.0
+    # heuristic: values in [0.2, 1] are almost certainly percent units (e.g., 0.509% -> 0.00509)
+    if x >= 0.2:
+        return x/100.0
+    return x
 
 
 def normalize_schwab_chain(chain: dict) -> tuple[pd.DataFrame, dict]:

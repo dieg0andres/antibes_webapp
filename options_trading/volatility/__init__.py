@@ -12,6 +12,7 @@ from .realized import RealizedVolResult, realized_vol
 from .panel import VolatilityStatePanelResult, volatility_state_panel
 from .panel_wrappers import volatility_state_panel_for_ticker
 from .iv_calculation import ivx_atm, normalize_schwab_chain
+from .iv_rv_panel import iv_rv_panel, IVRVPanelResult
 
 __all__ = [
     "EQUITIES_24H",
@@ -28,4 +29,6 @@ __all__ = [
     "volatility_state_panel_for_ticker",
     "ivx_atm",
     "normalize_schwab_chain",
+    "iv_rv_panel",
+    "IVRVPanelResult",
 ]

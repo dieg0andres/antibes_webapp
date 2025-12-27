@@ -35,6 +35,12 @@ CACHES = {
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
+SQLITE_PATH = env('SQLITE_PATH')
+if not SQLITE_PATH:
+    raise ValueError("SQLITE_PATH is not set")
+if not os.path.exists(SQLITE_PATH):
+    raise FileNotFoundError(f"SQLite database file not found at {SQLITE_PATH}")
+
 TODOIST_TOKEN = env('TODOIST_TOKEN')
 
 OWM_API_KEY = env('OWM_API_KEY')
@@ -51,7 +57,9 @@ MOTIVATION_CACHE_TTL = env('MOTIVATION_CACHE_TTL')
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-j9p!z&w7%irwzz6#*cc6tuw3rnf5gxq#tljufy&f%!-i_7r$%0'
+SECRET_KEY = env('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("DJANGO_SECRET_KEY is not set")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -112,7 +120,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': SQLITE_PATH,
     }
 }
 
