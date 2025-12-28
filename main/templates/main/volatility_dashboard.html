@@ -1,0 +1,332 @@
+{% comment %}
+Proof-of-concept Volatility Dashboard (HTML only).
+Data comes from get_volatility_dashboard_payload(...) helper.
+This template is intentionally plain but structured for later styling (e.g., Tailwind).
+{% endcomment %}
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Volatility Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; }
+    h1, h2, h3 { margin: 0.2rem 0; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .box { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin: 12px 0; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .kv { width: 100%; border-collapse: collapse; }
+    .kv th, .kv td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+    .kv th { width: 40%; color: #444; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #f1f1f1; font-size: 0.85rem; }
+    .error { color: #b00020; }
+    .ok { color: #1b5e20; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    pre { background: #fafafa; padding: 10px; border: 1px solid #eee; border-radius: 8px; overflow: auto; }
+    label { display: block; font-size: 0.9rem; margin-bottom: 4px; color: #333; }
+    select, input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 8px; }
+    button { padding: 10px 14px; border: 0; border-radius: 10px; background: #111; color: #fff; cursor: pointer; }
+    button:hover { opacity: 0.9; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .small { font-size: 0.9rem; }
+    a { color: #0b57d0; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { border-bottom: 1px solid #eee; padding: 6px 8px; text-align: left; }
+    .table th { color: #444; }
+  </style>
+</head>
+
+<body>
+  <h1>Volatility Dashboard</h1>
+  <div class="muted">
+    API JSON: <a href="/trading/volatility_dashboard?symbol={{ selected.symbol }}&target_dte_days={{ selected.target_dte_days }}&rv_reference={{ selected.rv_reference }}&run_id={{ selected.run_id }}">/trading/volatility_dashboard</a>
+    &nbsp;|&nbsp;
+    Graphs (placeholder): <a href="/trading/volatility_dashboard/graphs?symbol={{ selected.symbol }}&target_dte_days={{ selected.target_dte_days }}&rv_reference={{ selected.rv_reference }}&run_id={{ selected.run_id }}">/trading/volatility_dashboard/graphs</a>
+  </div>
+
+  <!-- Selector Form -->
+  <div class="box">
+    <h2>Selection</h2>
+
+    <form method="get" action="/trading/volatility_dashboard/ui">
+      <div class="grid3">
+        <div>
+          <label for="symbol">Symbol</label>
+          <select name="symbol" id="symbol">
+            {% for sym in options.symbols %}
+              <option value="{{ sym }}" {% if sym == selected.symbol %}selected{% endif %}>{{ sym }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label for="target_dte_days">Target DTE (days)</label>
+          <select name="target_dte_days" id="target_dte_days">
+            {% for d in options.target_dtes %}
+              <option value="{{ d }}" {% if d == selected.target_dte_days %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label for="rv_reference">RV Reference</label>
+          <select name="rv_reference" id="rv_reference">
+            {% for r in options.rv_references %}
+              <option value="{{ r }}" {% if r == selected.rv_reference %}selected{% endif %}>{{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top: 12px;">
+        <div>
+          <label for="run_id">Run (optional: pick a specific run)</label>
+          <select name="run_id" id="run_id">
+            <option value="">(latest matching run)</option>
+            {% for r in options.runs %}
+              <option value="{{ r.id }}" {% if r.id == selected.run_id %}selected{% endif %}>
+                id={{ r.id }} | {{ r.run_at }} | {{ r.run_label }} | {{ r.status }}
+              </option>
+            {% endfor %}
+          </select>
+          <div class="muted small" style="margin-top: 6px;">
+            If blank, we pick the latest run that has a matching snapshot.
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:end;">
+          <button type="submit">Load</button>
+        </div>
+      </div>
+    </form>
+
+    <div style="margin-top: 10px;" class="small">
+      <span class="tag">Selected</span>
+      <span class="muted">
+        symbol={{ selected.symbol }},
+        dte={{ selected.target_dte_days }},
+        rv_ref={{ selected.rv_reference }},
+        run_id={{ selected.run_id }},
+        run_at={{ selected.run_at }},
+        run_label={{ selected.run_label }},
+        run_status={{ selected.run_status }}
+      </span>
+    </div>
+
+    {% if errors and errors|length > 0 %}
+      <div class="box" style="border-color: #f3c1c1; background: #fff6f6;">
+        <h3 class="error">Errors / Warnings</h3>
+        <ul class="error">
+          {% for e in errors %}
+            <li>{{ e }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Snapshot -->
+  <div class="box">
+    <h2>Snapshot</h2>
+
+    {% if snapshot %}
+      <div class="row small">
+        <span class="tag">{{ snapshot.status }}</span>
+        <span class="muted">snapshot_id={{ snapshot.id }} created_at={{ snapshot.created_at }}</span>
+      </div>
+
+      {% if snapshot.error_message %}
+        <div class="box" style="border-color:#f3c1c1; background:#fff6f6;">
+          <h3 class="error">Snapshot error_message</h3>
+          <pre class="error">{{ snapshot.error_message }}</pre>
+        </div>
+      {% endif %}
+
+      <!-- AHA Metrics -->
+      <div class="box">
+        <h2>AHA Metrics</h2>
+        <div class="muted small">
+          These are the “decision layer” metrics (priced vs realized, regime, tails/leverage).
+        </div>
+
+        <div class="grid">
+          <!-- Priced vs Realized -->
+          <div class="box">
+            <h3>Priced vs Realized</h3>
+            <table class="kv">
+              <tr><th>ivx_calc</th><td>{{ snapshot.aha_metrics.ivx_calc }}</td></tr>
+              <tr><th>ivx_vendor</th><td>{{ snapshot.aha_metrics.ivx_vendor }}</td></tr>
+              <tr><th>ivx_diff</th><td>{{ snapshot.aha_metrics.ivx_diff }}</td></tr>
+
+              <tr><th>rv20</th><td>{{ snapshot.aha_metrics.rv20 }}</td></tr>
+              <tr><th>rv20_source</th><td>{{ snapshot.aha_metrics.rv20_source }}</td></tr>
+
+              <tr><th>vrp = ivx_calc - rv20</th><td>{{ snapshot.aha_metrics.vrp }}</td></tr>
+              <tr><th>iv_over_rv = ivx_calc / rv20</th><td>{{ snapshot.aha_metrics.iv_over_rv }}</td></tr>
+              <tr><th>var_vrp = ivx_calc^2 - rv20^2</th><td>{{ snapshot.aha_metrics.var_vrp }}</td></tr>
+            </table>
+          </div>
+
+          <!-- Regime / State -->
+          <div class="box">
+            <h3>Regime / State</h3>
+            <table class="kv">
+              <tr><th>heat_primary_20_120</th><td>{{ snapshot.aha_metrics.heat_primary_20_120 }}</td></tr>
+              <tr><th>heat_yz_20_120</th><td>{{ snapshot.aha_metrics.heat_yz_20_120 }}</td></tr>
+              <tr><th>zlogvol_yz_20_252</th><td>{{ snapshot.aha_metrics.zlogvol_yz_20_252 }}</td></tr>
+              <tr><th>rv_rank_yz_20_252</th><td>{{ snapshot.aha_metrics.rv_rank_yz_20_252 }}</td></tr>
+              <tr><th>rv_pct_yz_20_252</th><td>{{ snapshot.aha_metrics.rv_pct_yz_20_252 }}</td></tr>
+              <tr><th>is_bull_200</th><td>{{ snapshot.aha_metrics.is_bull_200 }}</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid">
+          <!-- Tail & Leverage -->
+          <div class="box">
+            <h3>Tail & Leverage</h3>
+            <table class="kv">
+              <tr><th>p_tail2_252</th><td>{{ snapshot.aha_metrics.p_tail2_252 }}</td></tr>
+              <tr><th>p_tail3_252</th><td>{{ snapshot.aha_metrics.p_tail3_252 }}</td></tr>
+
+              <tr><th>corr_ret_dlogvol_yz20_120</th><td>{{ snapshot.aha_metrics.corr_ret_dlogvol_yz20_120 }}</td></tr>
+
+              <tr><th>beta_ret_dlogvol_yz20_neg_120</th><td>{{ snapshot.aha_metrics.beta_ret_dlogvol_yz20_neg_120 }}</td></tr>
+              <tr><th>beta_ret_dlogvol_yz20_pos_120</th><td>{{ snapshot.aha_metrics.beta_ret_dlogvol_yz20_pos_120 }}</td></tr>
+
+              <tr><th>n_ret_neg_120</th><td>{{ snapshot.aha_metrics.n_ret_neg_120 }}</td></tr>
+              <tr><th>n_ret_pos_120</th><td>{{ snapshot.aha_metrics.n_ret_pos_120 }}</td></tr>
+            </table>
+          </div>
+
+          <!-- Flags / Notes -->
+          <div class="box">
+            <h3>Flags & Notes</h3>
+            <table class="kv">
+              <tr><th>Snapshot flags</th><td><pre>{{ snapshot.flags|safe }}</pre></td></tr>
+              <tr><th>Snapshot notes</th><td><pre>{{ snapshot.notes|safe }}</pre></td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- IV Diagnostics -->
+      <div class="box">
+        <h2>IV Diagnostics</h2>
+        <div class="muted small">Full iv_result is shown below; key fields are also extracted for readability.</div>
+
+        <div class="grid">
+          <div class="box">
+            <h3>IV Summary</h3>
+            <table class="kv">
+              <tr><th>symbol</th><td>{{ snapshot.iv_result.symbol }}</td></tr>
+              <tr><th>as_of</th><td>{{ snapshot.iv_result.as_of }}</td></tr>
+              <tr><th>underlying_price</th><td>{{ snapshot.iv_result.underlying_price }}</td></tr>
+              <tr><th>interest_rate</th><td>{{ snapshot.iv_result.interest_rate }}</td></tr>
+              <tr><th>dividend_yield</th><td>{{ snapshot.iv_result.dividend_yield }}</td></tr>
+              <tr><th>target_dte_days</th><td>{{ snapshot.iv_result.target_dte_days }}</td></tr>
+              <tr><th>ivx_calc</th><td>{{ snapshot.iv_result.ivx_calc }}</td></tr>
+              <tr><th>ivx_vendor</th><td>{{ snapshot.iv_result.ivx_vendor }}</td></tr>
+              <tr><th>ivx_diff</th><td>{{ snapshot.iv_result.ivx_diff }}</td></tr>
+              <tr><th>flags</th><td><pre>{{ snapshot.iv_result.flags|safe }}</pre></td></tr>
+            </table>
+          </div>
+
+          <div class="box">
+            <h3>Variance Interpolation</h3>
+            <table class="kv">
+              <tr><th>tv_lower</th><td>{{ snapshot.iv_result.tv_lower }}</td></tr>
+              <tr><th>tv_upper</th><td>{{ snapshot.iv_result.tv_upper }}</td></tr>
+              <tr><th>tv_target</th><td>{{ snapshot.iv_result.tv_target }}</td></tr>
+              <tr><th>notes</th><td><pre>{{ snapshot.iv_result.notes|safe }}</pre></td></tr>
+            </table>
+          </div>
+        </div>
+
+        <details class="box">
+          <summary><strong>Show full iv_result JSON</strong></summary>
+          <pre>{{ snapshot.iv_result|safe }}</pre>
+        </details>
+      </div>
+
+      <!-- RV Latest -->
+      <div class="box">
+        <h2>RV Latest Row</h2>
+        <details>
+          <summary><strong>Show full rv_latest JSON</strong></summary>
+          <pre>{{ snapshot.rv_latest|safe }}</pre>
+        </details>
+      </div>
+
+      <!-- Raw Paths -->
+      <div class="box">
+        <h2>Raw File Paths</h2>
+        <div class="muted small">Displayed as strings (no links). Useful for troubleshooting on SSD.</div>
+        <table class="kv">
+          <tr><th>daily</th><td><code>{{ snapshot.raw_paths.daily }}</code></td></tr>
+          <tr><th>intraday_15m</th><td><code>{{ snapshot.raw_paths.intraday_15m }}</code></td></tr>
+          <tr><th>option_chain</th><td><code>{{ snapshot.raw_paths.option_chain }}</code></td></tr>
+        </table>
+      </div>
+
+    {% else %}
+      <p class="error">No snapshot found for the current selection.</p>
+    {% endif %}
+  </div>
+
+  <!-- Recent session bars (for future charting) -->
+  <div class="box">
+    <h2>Recent Session Bars (for charting later)</h2>
+    <div class="muted small">Showing last {{ recent_session_bars|length }} sessions (chronological). Includes a compact table plus a full JSON row viewer.</div>
+
+    {% if recent_session_bars and recent_session_bars|length > 0 %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>session_ts</th>
+            <th>close</th>
+            <th>vol_primary_20</th>
+            <th>vol_yz_20</th>
+            <th>heat_primary_20_120</th>
+            <th>zlogvol_yz_20_252</th>
+            <th>p_tail2_252</th>
+            <th>p_tail3_252</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in recent_session_bars %}
+            <tr>
+              <td><code>{{ b.session_ts }}</code></td>
+              <td>{{ b.data.close }}</td>
+              <td>{{ b.data.vol_primary_20 }}</td>
+              <td>{{ b.data.vol_yz_20 }}</td>
+              <td>{{ b.data.heat_primary_20_120 }}</td>
+              <td>{{ b.data.zlogvol_yz_20_252 }}</td>
+              <td>{{ b.data.p_tail2_252 }}</td>
+              <td>{{ b.data.p_tail3_252 }}</td>
+            </tr>
+            <tr>
+              <td colspan="8">
+                <details>
+                  <summary class="small">Show full row JSON</summary>
+                  <pre>{{ b.data|safe }}</pre>
+                </details>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">No session bars found for this symbol.</p>
+    {% endif %}
+  </div>
+
+  <div class="muted small">
+    Next: we’ll add charts on the /graphs endpoint and then modernize styling (Tailwind/HTMX/React).
+  </div>
+</body>
+</html>

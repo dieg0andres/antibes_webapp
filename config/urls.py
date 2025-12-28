@@ -26,6 +26,9 @@ urlpatterns = [
     path('pay_mortgage/', views.pay_mortgage, name='pay_mortgage'),
     path('giotube/', views.giotube, name='giotube'),
     path('trading/dashboard/', views.trading_dashboard, name='trading_dashboard'),
+    path('trading/volatility_dashboard/', views.volatility_dashboard, name='volatility_dashboard'),
+    path('trading/volatility_dashboard/ui/', views.volatility_dashboard_ui, name='volatility_dashboard_ui'),
+    path('trading/volatility_dashboard/graphs/', views.volatility_dashboard_graphs, name='volatility_dashboard_graphs'),
     path('media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT}),
     path('admin/', admin.site.urls),
 ]
