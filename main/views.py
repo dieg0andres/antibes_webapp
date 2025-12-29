@@ -12,6 +12,8 @@ from main.views_helpers.volatility_dashboard_helpers import (
     get_volatility_dashboard_payload,
     get_volatility_dashboard_graphs_payload,
 )
+from main.views_helpers.volatility_dashboard_helpers import get_volatility_dashboard_graphs_ui_payload
+
 
 
 # Create your views here.
@@ -112,3 +114,24 @@ def volatility_dashboard_graphs(request):
         run_id=run_id,
     )
     return JsonResponse(payload, json_dumps_params={"indent": 2})
+    
+
+
+def volatility_dashboard_graphs_ui(request):
+    symbol = request.GET.get("symbol")
+    rv_reference = request.GET.get("rv_reference", "primary20")
+    target_dte_days = float(request.GET.get("target_dte_days", "30"))
+    run_id = request.GET.get("run_id")
+    run_id = int(run_id) if run_id else None
+    range_str = request.GET.get("range", "1y")
+
+    payload = get_volatility_dashboard_graphs_ui_payload(
+        symbol=symbol,
+        rv_reference=rv_reference,
+        target_dte_days=target_dte_days,
+        run_id=run_id,
+        range=range_str,
+    )
+    payload["range_options"] = ["3m","6m","1y","3y","5y","max"]
+
+    return render(request, "main/volatility_dashboard_graphs.html", payload)

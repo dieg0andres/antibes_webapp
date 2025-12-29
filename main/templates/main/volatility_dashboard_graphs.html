@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Volatility Dashboard — Graphs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .box { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin: 12px 0; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    label { display:block; font-size:0.9rem; margin-bottom:4px; }
+    select, input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 8px; }
+    button { padding: 10px 14px; border: 0; border-radius: 10px; background: #111; color: #fff; cursor: pointer; }
+    img { max-width: 100%; height: auto; border: 1px solid #eee; border-radius: 8px; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { text-align:left; padding:6px 8px; border-bottom:1px solid #eee; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    a { color:#0b57d0; text-decoration:none; }
+    a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <h1>Volatility Dashboard — Graphs</h1>
+  <div class="muted">
+    Back to UI: <a href="/trading/volatility_dashboard/ui?symbol={{ selected.symbol }}&target_dte_days={{ selected.target_dte_days }}&rv_reference={{ selected.rv_reference }}&run_id={{ selected.run_id }}">/ui</a>
+    &nbsp;|&nbsp;
+    JSON (graphs placeholder): <a href="/trading/volatility_dashboard/graphs?symbol={{ selected.symbol }}&target_dte_days={{ selected.target_dte_days }}&rv_reference={{ selected.rv_reference }}&run_id={{ selected.run_id }}">/graphs</a>
+  </div>
+
+  <div class="box">
+    <h2>Selection</h2>
+    <form method="get" action="/trading/volatility_dashboard/graphs/ui">
+      <div class="grid3">
+        <div>
+          <label>Symbol</label>
+          <select name="symbol">
+            {% for sym in options.symbols %}
+              <option value="{{ sym }}" {% if sym == selected.symbol %}selected{% endif %}>{{ sym }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label>Target DTE (days)</label>
+          <select name="target_dte_days">
+            {% for d in options.target_dtes %}
+              <option value="{{ d }}" {% if d == selected.target_dte_days %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label>RV Reference (for VRP/ratios)</label>
+          <select name="rv_reference">
+            {% for r in options.rv_references %}
+              <option value="{{ r }}" {% if r == selected.rv_reference %}selected{% endif %}>{{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="grid3" style="margin-top: 12px;">
+        <div>
+          <label>Run (optional end-date anchor)</label>
+          <select name="run_id">
+            <option value="">(latest matching run)</option>
+            {% for r in options.runs %}
+              <option value="{{ r.id }}" {% if r.id == selected.run_id %}selected{% endif %}>
+                id={{ r.id }} | {{ r.run_at }} | {{ r.run_label }} | {{ r.status }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label>Range</label>
+          <select name="range">
+            {% for r in range_options %}
+              <option value="{{ r }}" {% if r == range %}selected{% endif %}>{{ r }}</option>
+            {% endfor %}
+          </select>
+          <div class="muted">max = weekly downsample (last)</div>
+        </div>
+
+        <div style="display:flex; align-items:end;">
+          <button type="submit">Render graphs</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="muted" style="margin-top:10px;">
+      Selected: <code>{{ selected.symbol }}</code>, DTE=<code>{{ selected.target_dte_days }}</code>,
+      rv_ref=<code>{{ selected.rv_reference }}</code>, range=<code>{{ range }}</code>,
+      run_id=<code>{{ selected.run_id }}</code>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>Data availability</h2>
+    {% if chart_stats.empty %}
+      <div class="muted">No data available for this selection.</div>
+    {% else %}
+      <table>
+        <tr><th>range</th><td>{{ chart_stats.range }}</td></tr>
+        <tr><th>start_dt</th><td>{{ chart_stats.start_dt }}</td></tr>
+        <tr><th>end_dt</th><td>{{ chart_stats.end_dt }}</td></tr>
+        <tr><th>points_total</th><td>{{ chart_stats.points_total }}</td></tr>
+        <tr><th>non_nan_ivx</th><td>{{ chart_stats.non_nan_ivx }}</td></tr>
+        <tr><th>non_nan_vrp</th><td>{{ chart_stats.non_nan_vrp }}</td></tr>
+        <tr><th>non_nan_rv_primary20</th><td>{{ chart_stats.non_nan_rv_primary20 }}</td></tr>
+        <tr><th>non_nan_rv_yz20</th><td>{{ chart_stats.non_nan_rv_yz20 }}</td></tr>
+      </table>
+    {% endif %}
+  </div>
+
+  <div class="box">
+    <h2>Charts</h2>
+    {% if images.price_iv_rv %}
+      <h3>1) Price vs IVX & RV20</h3>
+      <img src="data:image/png;base64,{{ images.price_iv_rv }}" alt="price_iv_rv">
+    {% endif %}
+
+    {% if images.vrp %}
+      <h3>2) VRP (IVX - RV20_ref)</h3>
+      <img src="data:image/png;base64,{{ images.vrp }}" alt="vrp">
+    {% endif %}
+
+    {% if images.iv_over_rv %}
+      <h3>3) IV/RV</h3>
+      <img src="data:image/png;base64,{{ images.iv_over_rv }}" alt="iv_over_rv">
+    {% endif %}
+
+    {% if images.var_vrp %}
+      <h3>4) Variance VRP (IV^2 - RV^2)</h3>
+      <img src="data:image/png;base64,{{ images.var_vrp }}" alt="var_vrp">
+    {% endif %}
+
+    {% if images.iv_vendor_diff %}
+      <h3>5) IV vendor diff (calc - vendor)</h3>
+      <img src="data:image/png;base64,{{ images.iv_vendor_diff }}" alt="iv_vendor_diff">
+    {% endif %}
+
+    {% if images.heat %}
+      <h3>6) Heat (primary 20/120)</h3>
+      <img src="data:image/png;base64,{{ images.heat }}" alt="heat">
+    {% endif %}
+
+    {% if images.zscore %}
+      <h3>7) Z-score (YZ20)</h3>
+      <img src="data:image/png;base64,{{ images.zscore }}" alt="zscore">
+    {% endif %}
+
+    {% if images.tails %}
+      <h3>8) Tail frequencies</h3>
+      <img src="data:image/png;base64,{{ images.tails }}" alt="tails">
+    {% endif %}
+
+    {% if images.corr %}
+      <h3>9) Leverage correlation</h3>
+      <img src="data:image/png;base64,{{ images.corr }}" alt="corr">
+    {% endif %}
+
+    {% if images.betas %}
+      <h3>10) Conditional leverage betas</h3>
+      <img src="data:image/png;base64,{{ images.betas }}" alt="betas">
+    {% endif %}
+  </div>
+
+  <div class="muted">
+    Note: charts are generated server-side from DB only (no Schwab calls).
+  </div>
+</body>
+</html>
