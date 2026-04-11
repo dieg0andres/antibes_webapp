@@ -23,31 +23,42 @@ def index(request):
 
 @require_http_methods(["GET", "POST"])
 def todoist(request):
-
     if request.method == 'POST':
-        # Determine action from JSON body or form-encoded data
         action = None
+
         if request.content_type and 'application/json' in request.content_type:
             try:
                 payload = json.loads(request.body or b"{}")
             except json.JSONDecodeError:
                 payload = {}
             action = payload.get('action')
+
         if not action:
             action = request.POST.get('action')
 
         if not action:
-            return JsonResponse({'status': 'error', 'message': 'Missing action'}, status=400)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Missing action'},
+                status=400
+            )
 
-        # Branch behavior based on action value
         if action == 'pull_old_tasks_to_today':
-            pull_old_tasks_to_today()
-    
-    # Handle GET request (original functionality)
-    dashboard_data = build_dashboard()
-#    print("Dashboard data: ", dashboard_data)
-    return render(request, 'main/todoist.html', {'dashboard_data': dashboard_data})
+            updated_tasks = pull_old_tasks_to_today()
+            dashboard_data = build_dashboard()
 
+            return JsonResponse({
+                'status': 'success',
+                'message': f'Updated {len(updated_tasks)} old tasks to today',
+                'dashboard_data': dashboard_data,
+            })
+
+        return JsonResponse(
+            {'status': 'error', 'message': f'Unknown action: {action}'},
+            status=400
+        )
+
+    dashboard_data = build_dashboard()
+    return render(request, 'main/todoist.html', {'dashboard_data': dashboard_data})
 
 def pay_mortgage(request):
     dashboard_data = build_mortgage_dashboard()

@@ -1,412 +1,473 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Todoist Dashboard</title>
     <style>
+        :root {
+            --bg: #0a0d14;
+            --bg-elev-1: #11161f;
+            --bg-elev-2: #171d28;
+            --bg-elev-3: #1e2633;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.14);
+
+            --text: #eef2f7;
+            --text-muted: #9aa4b2;
+            --text-soft: #c7d0db;
+
+            --accent: #6ea8fe;
+            --accent-2: #8b5cf6;
+
+            --p1-bg: rgba(239, 68, 68, 0.16);
+            --p1-text: #ff7b7b;
+
+            --p2-bg: rgba(245, 158, 11, 0.16);
+            --p2-text: #ffbf66;
+
+            --p3-bg: rgba(59, 130, 246, 0.18);
+            --p3-text: #7db4ff;
+
+            --p4-bg: rgba(148, 163, 184, 0.16);
+            --p4-text: #c0cad6;
+
+            --neutral-pill-bg: rgba(255, 255, 255, 0.05);
+            --neutral-pill-text: #7f8a98;
+
+            --success: #22c55e;
+
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.35);
+            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.24);
+
+            --radius-xl: 22px;
+            --radius-lg: 18px;
+            --radius-md: 14px;
+            --radius-sm: 12px;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html,
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 16px;
-            line-height: 1.6;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(110, 168, 254, 0.10), transparent 28%),
+                radial-gradient(circle at top right, rgba(139, 92, 246, 0.10), transparent 30%),
+                linear-gradient(180deg, #0a0d14 0%, #0c1018 100%);
+            color: var(--text);
+            padding: 28px;
+            line-height: 1.45;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1440px;
             margin: 0 auto;
         }
 
         .header {
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
             margin-bottom: 24px;
-            color: white;
+            padding: 8px 4px 0;
         }
 
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 8px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            font-weight: 700;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.95;
-            font-weight: 500;
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 8px;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .header-copy h1 {
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            font-weight: 750;
+            letter-spacing: -0.03em;
+            color: var(--text);
+        }
+
+        .header-copy p {
+            margin-top: 10px;
+            color: var(--text-muted);
+            font-size: 1rem;
+            max-width: 720px;
+        }
+
+        .header-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .meta-card {
+            min-width: 170px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.025));
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .meta-label {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 8px;
+        }
+
+        .meta-value {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text);
         }
 
         .dashboard {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 22px;
+            margin-bottom: 22px;
+        }
+
+        .project-section,
+        .summary-stats {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015));
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
         }
 
         .project-section {
-            background: white;
-            border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border: 1px solid #e5e7eb;
         }
 
         .project-header {
-            text-align: center;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 16px;
+            padding: 2px 2px 18px;
+            margin-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .project-title-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .project-kicker {
+            font-size: 0.76rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
         }
 
         .project-header h2 {
-            color: #2d3748;
             font-size: 1.5rem;
-            margin-bottom: 4px;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
         }
 
-        .project-header .total-tasks {
-            color: #718096;
-            font-size: 0.9rem;
-            font-weight: 500;
+        .total-tasks {
+            font-size: 0.95rem;
+            color: var(--text-soft);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 9px 14px;
+            white-space: nowrap;
         }
 
         .table-container {
             overflow-x: auto;
-            border-radius: 12px;
-            background: #f8f9fa;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.02);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
+            min-width: 620px;
         }
 
-        th {
-            background: #f8f9fa;
-            color: #374151;
-            padding: 12px 8px;
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(8px);
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 14px 10px;
+            border-bottom: 1px solid var(--border);
             text-align: center;
-            font-weight: 600;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            border-bottom: 2px solid #e5e7eb;
         }
 
-        th:first-child {
+        thead th:first-child {
             text-align: left;
-            padding-left: 16px;
+            padding-left: 18px;
         }
 
-        th:last-child {
-            padding-right: 16px;
+        thead th:last-child {
+            padding-right: 18px;
         }
 
-        td {
-            padding: 12px 8px;
+        tbody td {
+            padding: 14px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             text-align: center;
-            border-bottom: 1px solid #e2e8f0;
             vertical-align: middle;
+            color: var(--text-soft);
         }
 
-        td:first-child {
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody td:first-child {
             text-align: left;
-            padding-left: 16px;
-            font-weight: 500;
-            color: #1f2937;
+            padding-left: 18px;
         }
 
-        td:last-child {
-            padding-right: 16px;
+        tbody td:last-child {
+            padding-right: 18px;
         }
 
-        .priority-count {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 28px;
-            height: 28px;
-            padding: 0 8px;
-            border-radius: 14px;
-            font-weight: 600;
-            font-size: 0.75rem;
-            line-height: 1;
+        tbody tr {
+            transition: background-color 0.18s ease, transform 0.18s ease;
         }
 
-        .p1 { background: #fee2e2; color: #dc2626; }
-        .p2 { background: #fef3c7; color: #d97706; }
-        .p3 { background: #dbeafe; color: #2563eb; }
-        .p4 { background: #f3f4f6; color: #6b7280; }
-        .total { background: #f9fafb; color: #374151; font-weight: 600; }
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
 
         .today {
-            background: #f8f9fa;
-            font-weight: 600;
+            background: rgba(110, 168, 254, 0.08);
+        }
+
+        .today:hover {
+            background: rgba(110, 168, 254, 0.11);
         }
 
         .weekend {
-            background: #f3f4f6 !important;
+            background: rgba(255, 255, 255, 0.025);
         }
 
         .today.weekend {
-            background: #f3f4f6 !important;
+            background: rgba(110, 168, 254, 0.10);
         }
 
         .date-info {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            gap: 2px;
+            gap: 3px;
         }
 
         .day-name {
-            font-weight: 600;
-            color: #111827;
-            font-size: 0.9rem;
+            font-size: 0.92rem;
+            font-weight: 650;
+            color: var(--text);
         }
 
         .date-display {
-            font-size: 0.75rem;
-            color: #374151;
-            opacity: 1;
+            font-size: 0.77rem;
+            color: var(--text-muted);
+        }
+
+        .priority-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            height: 34px;
+            padding: 0 10px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            line-height: 1;
+            border: 1px solid transparent;
+        }
+
+        .p1 {
+            background: var(--p1-bg);
+            color: var(--p1-text);
+            border-color: rgba(239, 68, 68, 0.20);
+        }
+
+        .p2 {
+            background: var(--p2-bg);
+            color: var(--p2-text);
+            border-color: rgba(245, 158, 11, 0.20);
+        }
+
+        .p3 {
+            background: var(--p3-bg);
+            color: var(--p3-text);
+            border-color: rgba(59, 130, 246, 0.22);
+        }
+
+        .p4 {
+            background: var(--p4-bg);
+            color: var(--p4-text);
+            border-color: rgba(148, 163, 184, 0.20);
+        }
+
+        .total {
+            background: rgba(255, 255, 255, 0.07);
+            color: var(--text);
+            border-color: var(--border);
+        }
+
+        .zero-pill {
+            background: var(--neutral-pill-bg);
+            color: var(--neutral-pill-text);
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
 
         .summary-stats {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border: 1px solid #e5e7eb;
+            padding: 22px;
         }
 
-        .summary-stats h3 {
-            text-align: center;
-            color: #2d3748;
-            margin-bottom: 16px;
-            font-size: 1.3rem;
-            font-weight: 600;
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 16px;
+            margin-bottom: 18px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-header h3 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+
+        .summary-header p {
+            color: var(--text-muted);
+            font-size: 0.92rem;
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 14px;
         }
 
         .stat-card {
-            text-align: center;
-            padding: 16px 12px;
-            border-radius: 12px;
-            color: white;
-            font-weight: 600;
-            min-height: 80px;
+            background: var(--bg-elev-2);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px 16px;
+            min-height: 110px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center;
+            gap: 8px;
         }
 
-        .stat-card.p1 { background: #fee2e2; color: #dc2626; }
-        .stat-card.p2 { background: #fef3c7; color: #d97706; }
-        .stat-card.p3 { background: #dbeafe; color: #2563eb; }
-        .stat-card.p4 { background: #f3f4f6; color: #6b7280; }
+        .stat-card .stat-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
 
         .stat-number {
-            font-size: 1.5rem;
-            margin-bottom: 4px;
-            font-weight: 700;
+            font-size: 2rem;
+            font-weight: 760;
+            letter-spacing: -0.03em;
         }
 
         .stat-label {
-            font-size: 0.8rem;
-            opacity: 0.9;
-            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 550;
         }
 
-        /* Tablet and Desktop Styles */
-        @media (min-width: 768px) {
-            body {
-                padding: 24px;
-            }
-
-            .header h1 {
-                font-size: 2.5rem;
-            }
-
-            .header p {
-                font-size: 1.1rem;
-            }
-
-            .dashboard {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 24px;
-            }
-
-            .project-section {
-                padding: 24px;
-            }
-
-            .project-header h2 {
-                font-size: 1.8rem;
-            }
-
-            table {
-                font-size: 0.9rem;
-            }
-
-            th, td {
-                padding: 14px 10px;
-            }
-
-            .priority-count {
-                min-width: 32px;
-                height: 32px;
-                font-size: 0.8rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 16px;
-            }
-
-            .stat-card {
-                padding: 20px 16px;
-                min-height: 100px;
-            }
-
-            .stat-number {
-                font-size: 2rem;
-            }
-
-            .stat-label {
-                font-size: 0.9rem;
-            }
+        .stat-accent {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
         }
 
-        /* Large Desktop Styles */
-        @media (min-width: 1024px) {
-            .container {
-                max-width: 1400px;
-            }
+        .stat-card.p1 .stat-number { color: var(--p1-text); }
+        .stat-card.p2 .stat-number { color: var(--p2-text); }
+        .stat-card.p3 .stat-number { color: var(--p3-text); }
+        .stat-card.p4 .stat-number { color: var(--p4-text); }
 
-            .dashboard {
-                gap: 32px;
-            }
+        .stat-card.p1 .stat-accent { background: var(--p1-text); }
+        .stat-card.p2 .stat-accent { background: var(--p2-text); }
+        .stat-card.p3 .stat-accent { background: var(--p3-text); }
+        .stat-card.p4 .stat-accent { background: var(--p4-text); }
 
-            .project-section {
-                padding: 28px;
-            }
-
-            table {
-                font-size: 0.95rem;
-            }
-
-            th, td {
-                padding: 16px 12px;
-            }
-
-            .priority-count {
-                min-width: 36px;
-                height: 36px;
-                font-size: 0.85rem;
-            }
-        }
-
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-            .project-section, .summary-stats {
-                background: #1a202c;
-                color: #e2e8f0;
-            }
-
-            .project-header h2 {
-                color: #e2e8f0;
-            }
-
-            .project-header .total-tasks {
-                color: #a0aec0;
-            }
-
-            td:first-child {
-                color: #e2e8f0;
-            }
-
-            .weekend {
-                background: #2d3748;
-            }
-
-            .table-container {
-                background: #2d3748;
-            }
-
-            .summary-stats h3 {
-                color: #e2e8f0;
-            }
-        }
-
-        /* Accessibility improvements */
-        @media (prefers-reduced-motion: reduce) {
-            .project-section {
-                transition: none;
-            }
-        }
-
-        /* High contrast mode */
-        @media (prefers-contrast: high) {
-            .priority-count {
-                border: 2px solid currentColor;
-            }
-        }
-
-        /* Action Button Styles */
         .action-section {
             display: flex;
             justify-content: center;
-            margin-top: 32px;
-            padding: 20px 0;
+            margin-top: 26px;
         }
 
         .action-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 16px 32px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            appearance: none;
+            border: 1px solid rgba(110, 168, 254, 0.22);
+            background:
+                linear-gradient(180deg, rgba(110, 168, 254, 0.18), rgba(110, 168, 254, 0.08));
+            color: var(--text);
+            border-radius: 16px;
+            padding: 15px 26px;
+            font-size: 0.96rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s ease;
-            min-width: 180px;
-            justify-content: center;
+            min-width: 220px;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
         }
 
         .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            transform: translateY(-1px);
+            border-color: rgba(110, 168, 254, 0.38);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
         }
 
         .action-btn:active {
             transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
         }
 
         .action-btn:disabled {
@@ -415,48 +476,111 @@
             transform: none;
         }
 
-        .btn-icon {
-            font-size: 1.2rem;
-            transition: transform 0.3s ease;
+        .action-btn.loading {
+            position: relative;
         }
 
-        .action-btn:hover .btn-icon {
-            transform: rotate(180deg);
-        }
-
-        .action-btn:disabled .btn-icon {
-            transform: none;
-        }
-
-        /* Loading state */
-        .action-btn.loading .btn-text {
-            opacity: 0.7;
-        }
-
-        .action-btn.loading .btn-icon {
-            animation: spin 1s linear infinite;
+        .action-btn.loading::after {
+            content: "";
+            width: 15px;
+            height: 15px;
+            margin-left: 10px;
+            border: 2px solid rgba(255,255,255,0.25);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            display: inline-block;
+            vertical-align: -2px;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+
+        @media (min-width: 900px) {
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 18px;
+            }
+
+            .project-header,
+            .summary-header,
+            .header-row {
+                align-items: flex-start;
+            }
+
+            .project-header,
+            .summary-header {
+                flex-direction: column;
+            }
+
+            .meta-card {
+                min-width: 140px;
+            }
+
+            .action-btn {
+                width: 100%;
+                max-width: 360px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation: none !important;
+                transition: none !important;
+                scroll-behavior: auto !important;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         {% csrf_token %}
+
         <div class="header">
-            <h1>📋 Todoist Dashboard</h1>
-            <p>10-Day Task Overview</p>
+            <div class="eyebrow">Task planning dashboard</div>
+
+            <div class="header-row">
+                <div class="header-copy">
+                    <h1>Todoist Dashboard</h1>
+                    <p>Ten-day view of upcoming due tasks across work and personal projects.</p>
+                </div>
+
+                <div class="header-meta">
+                    <div class="meta-card">
+                        <div class="meta-label">Refresh cadence</div>
+                        <div class="meta-value">5 min</div>
+                    </div>
+                    <div class="meta-card">
+                        <div class="meta-label">Scope</div>
+                        <div class="meta-value">10 days</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="dashboard">
             <div class="project-section">
                 <div class="project-header">
-                    <h2>💼 Work</h2>
+                    <div class="project-title-wrap">
+                        <div class="project-kicker">Project view</div>
+                        <h2>Work</h2>
+                    </div>
                     <div class="total-tasks" id="work-total">Total Tasks: 0</div>
                 </div>
+
                 <div class="table-container">
                     <table id="work-table">
                         <thead>
@@ -469,17 +593,20 @@
                                 <th>Total</th>
                             </tr>
                         </thead>
-                        <tbody id="work-tbody">
-                        </tbody>
+                        <tbody id="work-tbody"></tbody>
                     </table>
                 </div>
             </div>
 
             <div class="project-section">
                 <div class="project-header">
-                    <h2>🏠 Personal</h2>
+                    <div class="project-title-wrap">
+                        <div class="project-kicker">Project view</div>
+                        <h2>Personal</h2>
+                    </div>
                     <div class="total-tasks" id="personal-total">Total Tasks: 0</div>
                 </div>
+
                 <div class="table-container">
                     <table id="personal-table">
                         <thead>
@@ -492,36 +619,55 @@
                                 <th>Total</th>
                             </tr>
                         </thead>
-                        <tbody id="personal-tbody">
-                        </tbody>
+                        <tbody id="personal-tbody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
         <div class="summary-stats">
-            <h3>📊 Summary Statistics</h3>
+            <div class="summary-header">
+                <div>
+                    <h3>Summary Statistics</h3>
+                    <p>Priority totals across both project views.</p>
+                </div>
+            </div>
+
             <div class="stats-grid">
                 <div class="stat-card p1">
-                    <div class="stat-number" id="total-p1">0</div>
+                    <div class="stat-top">
+                        <div class="stat-number" id="total-p1">0</div>
+                        <div class="stat-accent"></div>
+                    </div>
                     <div class="stat-label">P1 Tasks</div>
                 </div>
+
                 <div class="stat-card p2">
-                    <div class="stat-number" id="total-p2">0</div>
+                    <div class="stat-top">
+                        <div class="stat-number" id="total-p2">0</div>
+                        <div class="stat-accent"></div>
+                    </div>
                     <div class="stat-label">P2 Tasks</div>
                 </div>
+
                 <div class="stat-card p3">
-                    <div class="stat-number" id="total-p3">0</div>
+                    <div class="stat-top">
+                        <div class="stat-number" id="total-p3">0</div>
+                        <div class="stat-accent"></div>
+                    </div>
                     <div class="stat-label">P3 Tasks</div>
                 </div>
+
                 <div class="stat-card p4">
-                    <div class="stat-number" id="total-p4">0</div>
+                    <div class="stat-top">
+                        <div class="stat-number" id="total-p4">0</div>
+                        <div class="stat-accent"></div>
+                    </div>
                     <div class="stat-label">P4 Tasks</div>
                 </div>
             </div>
         </div>
 
-        <!-- Action Button Section -->
         <div class="action-section">
             <button id="action-button" class="action-btn" data-action="pull_old_tasks_to_today">
                 <span class="btn-text">Pull old tasks to today</span>
@@ -531,32 +677,29 @@
 
     <script>
         // Dashboard data from Django
-        const dashboardData = {{ dashboard_data|safe }};
-        
+        let dashboardData = {{ dashboard_data|safe }};
+
         function renderTable(projectType, data) {
             const tbody = document.getElementById(`${projectType}-tbody`);
             const totalElement = document.getElementById(`${projectType}-total`);
-            
+
             let totalTasks = 0;
-            // Use the first date from the data as "today" to ensure consistency with backend
             const today = data.dates[0] ? data.dates[0].date_str : new Date().toISOString().split('T')[0];
-            
+
             tbody.innerHTML = '';
-            
+
             data.dates.forEach(dateData => {
                 const row = document.createElement('tr');
-                
-                // Check if this is today
+
                 const isToday = dateData.date_str === today;
                 const isWeekend = ['Saturday', 'Sunday'].includes(dateData.day_name);
-                
+
                 if (isToday) {
                     row.classList.add('today');
                 } else if (isWeekend) {
                     row.classList.add('weekend');
                 }
-                
-                // Date column
+
                 const dateCell = document.createElement('td');
                 dateCell.innerHTML = `
                     <div class="date-info">
@@ -565,42 +708,41 @@
                     </div>
                 `;
                 row.appendChild(dateCell);
-                
-                // Priority columns
+
                 const priorities = ['P1', 'P2', 'P3', 'P4'];
                 priorities.forEach(priority => {
                     const cell = document.createElement('td');
                     const count = dateData.counts[priority];
+
                     if (count > 0) {
                         cell.innerHTML = `<span class="priority-count ${priority.toLowerCase()}">${count}</span>`;
                     } else {
-                        cell.innerHTML = '<span class="priority-count" style="background: #f1f2f6; color: #747d8c;">0</span>';
+                        cell.innerHTML = '<span class="priority-count zero-pill">0</span>';
                     }
                     row.appendChild(cell);
                 });
-                
-                // Total column
+
                 const totalCell = document.createElement('td');
                 const total = dateData.counts.total;
                 totalTasks += total;
+
                 if (total > 0) {
                     totalCell.innerHTML = `<span class="priority-count total">${total}</span>`;
                 } else {
-                    totalCell.innerHTML = '<span class="priority-count" style="background: #f1f2f6; color: #747d8c;">0</span>';
+                    totalCell.innerHTML = '<span class="priority-count zero-pill">0</span>';
                 }
                 row.appendChild(totalCell);
-                
+
                 tbody.appendChild(row);
             });
-            
+
             totalElement.textContent = `Total Tasks: ${totalTasks}`;
             return totalTasks;
         }
-        
+
         function updateSummaryStats() {
             let totalP1 = 0, totalP2 = 0, totalP3 = 0, totalP4 = 0;
-            
-            // Calculate totals from both projects
+
             ['work', 'personal'].forEach(projectType => {
                 if (dashboardData[projectType]) {
                     dashboardData[projectType].dates.forEach(dateData => {
@@ -611,14 +753,13 @@
                     });
                 }
             });
-            
+
             document.getElementById('total-p1').textContent = totalP1;
             document.getElementById('total-p2').textContent = totalP2;
             document.getElementById('total-p3').textContent = totalP3;
             document.getElementById('total-p4').textContent = totalP4;
         }
-        
-        // Initialize dashboard
+
         function initDashboard() {
             if (dashboardData.work) {
                 renderTable('work', dashboardData.work);
@@ -628,35 +769,29 @@
             }
             updateSummaryStats();
         }
-        
-        // Auto-refresh every 5 minutes
+
         setInterval(() => {
             location.reload();
         }, 5 * 60 * 1000);
-        
-        // Initialize when page loads
+
         document.addEventListener('DOMContentLoaded', initDashboard);
 
-        // Handle clicks for any button with a data-action attribute
         document.addEventListener('DOMContentLoaded', function() {
             const buttons = document.querySelectorAll('[data-action]');
 
             buttons.forEach((btn) => {
                 btn.addEventListener('click', async function() {
-                    // Add loading state
                     btn.classList.add('loading');
                     btn.disabled = true;
 
                     try {
-                        // Get CSRF token
-                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
                                         document.cookie.split('; ')
                                         .find(row => row.startsWith('csrftoken='))
                                         ?.split('=')[1];
 
                         const action = btn.dataset.action || 'refresh_data';
 
-                        // Make POST request
                         const response = await fetch('/todoist/', {
                             method: 'POST',
                             headers: {
@@ -670,13 +805,17 @@
 
                         if (result.status === 'success') {
                             console.log('Success:', result.message);
+
+                            if (result.dashboard_data) {
+                                dashboardData = result.dashboard_data;
+                                initDashboard();
+                            }    
                         } else {
                             console.error('Error:', result.message);
                         }
                     } catch (error) {
                         console.error('Request failed:', error);
                     } finally {
-                        // Remove loading state
                         btn.classList.remove('loading');
                         btn.disabled = false;
                     }

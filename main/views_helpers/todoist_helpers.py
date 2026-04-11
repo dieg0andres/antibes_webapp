@@ -13,14 +13,14 @@ headers = {
 
 api = TodoistAPI(TODOIST_TOKEN)
 
-TODOIST_TASKS_URL = "https://api.todoist.com/rest/v2/tasks"
-TODOIST_PROJECTS_URL = "https://api.todoist.com/rest/v2/projects"
-TODOIST_TASK_UPDATE_URL = "https://api.todoist.com/rest/v2/tasks/" # append task id
+TODOIST_TASKS_URL = "https://api.todoist.com/api/v1/tasks"
+TODOIST_PROJECTS_URL = "https://api.todoist.com/api/v1/projects"
+TODOIST_TASK_UPDATE_URL = "https://api.todoist.com/api/v1/tasks/" # append task id
 
 projects = [
     {"name": "Inbox", "id": "2330914749"},
-    {"name": "personal", "id": "2358320501"},
-    {"name": "work", "id": "2358320486"},
+    {"name": "personal", "id": "6cf88WCgQpj4FF9J"},
+    {"name": "work", "id": "6cf88RWXwQHgrq9M"},
 ]
 
 def filter_tasks_by_projects(tasks, projects):
@@ -146,6 +146,12 @@ def create_dashboard_data(filtered_tasks):
     Returns:
         dict: Dashboard data with work and personal project data
     """
+
+    print(f"Total filtered tasks passed into dashboard: {len(filtered_tasks)}")
+
+    due_tasks = [t for t in filtered_tasks if t.get("due") is not None]
+    print(f"Tasks with due dates: {len(due_tasks)}")
+
     # Get project IDs for work and personal
     work_project_id = next((p['id'] for p in projects if p['name'] == 'work'), None)
     personal_project_id = next((p['id'] for p in projects if p['name'] == 'personal'), None)
@@ -223,17 +229,75 @@ def create_dashboard_data(filtered_tasks):
 
 
 def get_tasks():
-    response = requests.get(TODOIST_TASKS_URL, headers=headers)
+    all_tasks = []
+    next_cursor = None
 
-    tasks = response.json()
-    
-    # Filter tasks to only show those in our defined projects
-    filtered_tasks = filter_tasks_by_projects(tasks, projects)
-    
-    # Update the priority field in the filtered tasks
-    filtered_tasks = update_task_priorities(filtered_tasks)
+    try:
+        while True:
+            params = {}
+            if next_cursor:
+                params["cursor"] = next_cursor
 
-    return filtered_tasks
+            response = requests.get(
+                TODOIST_TASKS_URL,
+                headers={
+                    **headers,
+                    "Accept": "application/json",
+                },
+                params=params,
+                timeout=15,
+            )
+
+            print("TODOIST STATUS:", response.status_code)
+            print("TODOIST CONTENT-TYPE:", response.headers.get("Content-Type"))
+            print("TODOIST BODY:", repr(response.text[:500]))
+
+            response.raise_for_status()
+
+            if not response.text or not response.text.strip():
+                print("Todoist returned empty body")
+                break
+
+            content_type = response.headers.get("Content-Type", "")
+            if "application/json" not in content_type.lower():
+                print(f"Todoist returned non-JSON. Content-Type={content_type}. Body={response.text[:500]!r}")
+                break
+
+            payload = response.json()
+
+            if isinstance(payload, dict):
+                page_tasks = payload.get("results", [])
+                next_cursor = payload.get("next_cursor")
+            elif isinstance(payload, list):
+                page_tasks = payload
+                next_cursor = None
+            else:
+                print(f"Unexpected Todoist payload shape: {payload!r}")
+                break
+
+            if not isinstance(page_tasks, list):
+                print(f"Unexpected Todoist results shape: {page_tasks!r}")
+                break
+
+            all_tasks.extend(page_tasks)
+
+            print(f"Fetched page with {len(page_tasks)} tasks; total so far = {len(all_tasks)}")
+
+            if not next_cursor:
+                break
+
+        filtered_tasks = filter_tasks_by_projects(all_tasks, projects)
+        print(f"Filtered down to {len(filtered_tasks)} tasks after project filter")
+
+        filtered_tasks = update_task_priorities(filtered_tasks)
+        return filtered_tasks
+
+    except requests.RequestException as e:
+        print(f"Todoist request failed: {e}")
+        return []
+    except ValueError as e:
+        print(f"Todoist JSON parsing failed: {e}")
+        return []
 
 
 def build_dashboard():
