@@ -4,7 +4,7 @@ from django.core.cache import cache
 from config.settings import WEATHER_CACHE_KEY, MOTIVATION_CACHE_KEY
 
 
-MORTGAGE_END_DATE = date(2027, 12, 1)
+MORTGAGE_END_DATE = date(2027, 2, 1)
 
 MORTGAGE_SCHEDULE: Dict[str, Dict[str, int]] = {
     'Jul 2025': {'principal': 400000, 'interest_paid': 0},
@@ -16,27 +16,17 @@ MORTGAGE_SCHEDULE: Dict[str, Dict[str, int]] = {
     'Jan 2026': {'principal': 380162, 'interest_paid': 13322},
     'Feb 2026': {'principal': 364412, 'interest_paid': 15460},
     'Mar 2026': {'principal': 348573, 'interest_paid': 17510},
-    'Apr 2026': {'principal': 332644, 'interest_paid': 19471},
-    'May 2026': {'principal': 316627, 'interest_paid': 21342},
-    'Jun 2026': {'principal': 300519, 'interest_paid': 23123},
-    'Jul 2026': {'principal': 284320, 'interest_paid': 24813},
-    'Aug 2026': {'principal': 268031, 'interest_paid': 26413},
-    'Sep 2026': {'principal': 251649, 'interest_paid': 27920},
-    'Oct 2026': {'principal': 235176, 'interest_paid': 29336},
-    'Nov 2026': {'principal': 218610, 'interest_paid': 30659},
-    'Dec 2026': {'principal': 201951, 'interest_paid': 31889},
-    'Jan 2027': {'principal': 185198, 'interest_paid': 33024},
-    'Feb 2027': {'principal': 168351, 'interest_paid': 34066},
-    'Mar 2027': {'principal': 151409, 'interest_paid': 35013},
-    'Apr 2027': {'principal': 134372, 'interest_paid': 35865},
-    'May 2027': {'principal': 117239, 'interest_paid': 36621},
-    'Jun 2027': {'principal': 100009, 'interest_paid': 37280},
-    'Jul 2027': {'principal': 82683, 'interest_paid': 37843},
-    'Aug 2027': {'principal': 65259, 'interest_paid': 38308},
-    'Sep 2027': {'principal': 47737, 'interest_paid': 38675},
-    'Oct 2027': {'principal': 30117, 'interest_paid': 38943},
-    'Nov 2027': {'principal': 12398, 'interest_paid': 39113},
-    'Dec 2027': {'principal': 0, 'interest_paid': 39183},
+    'Apr 2026': {'principal': 243755, 'interest_paid': 19471},
+    'May 2026': {'principal': 233349, 'interest_paid': 20842},
+    'Jun 2026': {'principal': 216773, 'interest_paid': 22155},
+    'Jul 2026': {'principal': 200103, 'interest_paid': 23374},
+    'Aug 2026': {'principal': 183340, 'interest_paid': 24500},
+    'Sep 2026': {'principal': 166482, 'interest_paid': 25531},
+    'Oct 2026': {'principal': 149530, 'interest_paid': 26467},
+    'Nov 2026': {'principal': 132482, 'interest_paid': 27308},
+    'Dec 2026': {'principal': 34538, 'interest_paid': 28054},
+    'Jan 2027': {'principal': 16844, 'interest_paid': 28248},
+    'Feb 2027': {'principal': 0, 'interest_paid': 28343},
 }
 
 _LAST_SNAPSHOT = list(MORTGAGE_SCHEDULE.values())[-1]
