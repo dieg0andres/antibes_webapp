@@ -7,6 +7,9 @@ from django.views.decorators.http import require_http_methods
 from main.views_helpers.todoist_helpers import build_dashboard, pull_old_tasks_to_today
 from main.views_helpers.pay_mortgage_helpers import build_mortgage_dashboard
 from main.views_helpers.giotube_helpers import build_giotube_playlist
+from main.views_helpers.personal_finance_dashboard_helpers import (
+    build_personal_finance_dashboard_context,
+)
 from main.views_helpers.trading_helpers import build_trading_dashboard_context
 from main.views_helpers.volatility_dashboard_helpers import (
     get_volatility_dashboard_payload,
@@ -72,6 +75,41 @@ def giotube(request):
 def trading_dashboard(request):
     context = build_trading_dashboard_context()
     return render(request, 'main/trading_dashboard.html', context)
+
+
+@require_http_methods(["GET", "POST"])
+def personal_finance_dashboard(request):
+    force_refresh = request.GET.get("refresh") == "1"
+
+    if request.method == "POST":
+        action = None
+
+        if request.content_type and "application/json" in request.content_type:
+            try:
+                payload = json.loads(request.body or b"{}")
+            except json.JSONDecodeError:
+                payload = {}
+            action = payload.get("action")
+
+        if not action:
+            action = request.POST.get("action")
+
+        if action == "refresh":
+            force_refresh = True
+        elif action:
+            return JsonResponse(
+                {"status": "error", "message": f"Unknown action: {action}"},
+                status=400,
+            )
+
+    context = build_personal_finance_dashboard_context(
+        force_refresh=force_refresh,
+    )
+    return JsonResponse(context, json_dumps_params={"indent": 2})
+
+
+def personal_finance_dashboard_ui(request):
+    return render(request, "main/personal_finance_dashboard.html")
 
 
 

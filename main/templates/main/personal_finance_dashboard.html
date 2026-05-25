@@ -1,0 +1,1245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Personal Finance Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0f14;
+      --panel: #111820;
+      --panel-soft: #0f151d;
+      --panel-raised: #151d27;
+      --border: #263241;
+      --border-soft: rgba(120, 144, 173, 0.22);
+      --text: #d7dde8;
+      --heading: #f1f5fb;
+      --muted: #8a97a8;
+      --blue: #2962ff;
+      --cyan: #22c8db;
+      --green: #00c087;
+      --red: #ff5b5b;
+      --amber: #ffb020;
+      --shadow: 0 18px 55px rgba(0, 0, 0, 0.36);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(41, 98, 255, 0.14), transparent 28rem),
+        radial-gradient(circle at 86% 12%, rgba(34, 200, 219, 0.1), transparent 24rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    select {
+      font: inherit;
+    }
+
+    .shell {
+      width: min(1560px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      margin: -18px -18px 18px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(11, 15, 20, 0.88);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .logo {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(41, 98, 255, 0.5);
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(41, 98, 255, 0.3), rgba(34, 200, 219, 0.15));
+      color: var(--heading);
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--heading);
+      font-size: clamp(1.15rem, 2vw, 1.55rem);
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .pill,
+    .btn,
+    .select {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel-soft);
+      color: var(--text);
+    }
+
+    .pill {
+      padding: 8px 10px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .btn {
+      padding: 9px 12px;
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .btn:hover {
+      border-color: rgba(41, 98, 255, 0.8);
+      background: #172131;
+    }
+
+    .btn:active { transform: translateY(1px); }
+
+    .btn.primary {
+      border-color: rgba(41, 98, 255, 0.9);
+      background: var(--blue);
+      color: white;
+      font-weight: 700;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      background: rgba(17, 24, 32, 0.74);
+    }
+
+    .stat-label {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 0.73rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stat-value {
+      margin: 0;
+      color: var(--heading);
+      font-size: 0.92rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      grid-column: span 12;
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(21, 29, 39, 0.96), rgba(15, 21, 29, 0.96));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card.large,
+    .card.side { grid-column: span 12; }
+
+    .card-header {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 16px 16px 10px;
+      border-bottom: 1px solid rgba(120, 144, 173, 0.12);
+    }
+
+    .card-title {
+      margin: 0;
+      color: var(--heading);
+      font-size: 1rem;
+      letter-spacing: -0.01em;
+    }
+
+    .card-copy {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .segmented {
+      display: inline-flex;
+      padding: 3px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-soft);
+    }
+
+    .segmented button {
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      padding: 7px 10px;
+      cursor: pointer;
+    }
+
+    .segmented button.active {
+      background: var(--blue);
+      color: white;
+    }
+
+    .select {
+      min-width: 190px;
+      padding: 9px 10px;
+      outline: none;
+    }
+
+    .chart-box {
+      position: relative;
+      height: 360px;
+      padding: 12px 14px 18px;
+    }
+
+    .chart-box.short {
+      height: 330px;
+    }
+
+    .chart-box.budget-chart {
+      height: 520px;
+    }
+
+    .chart-box.subcategory-budget-chart {
+      height: 820px;
+    }
+
+    .chart-scroll {
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .chart-scroll .chart-box {
+      min-width: 100%;
+    }
+
+    .chart-scroll::-webkit-scrollbar {
+      height: 10px;
+    }
+
+    .chart-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chart-scroll::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: var(--border);
+    }
+
+    .budget-summary {
+      padding: 16px;
+      border-bottom: 1px solid rgba(120, 144, 173, 0.12);
+    }
+
+    .budget-subsection {
+      padding: 16px;
+      border-bottom: 1px solid rgba(120, 144, 173, 0.12);
+    }
+
+    .budget-subsection:last-child {
+      border-bottom: 0;
+    }
+
+    .subsection-title {
+      margin: 0;
+      color: var(--heading);
+      font-size: 0.92rem;
+    }
+
+    .subsection-copy {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .progress-row {
+      display: grid;
+      grid-template-columns: minmax(110px, 170px) 1fr minmax(120px, auto);
+      gap: 12px;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .progress-title {
+      color: var(--heading);
+      font-weight: 700;
+    }
+
+    .track {
+      position: relative;
+      height: 12px;
+      border-radius: 999px;
+      background: #0a1018;
+      border: 1px solid rgba(120, 144, 173, 0.18);
+      overflow: hidden;
+    }
+
+    .fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+    }
+
+    .progress-value {
+      color: var(--muted);
+      font-size: 0.86rem;
+      text-align: right;
+    }
+
+    .empty,
+    .error-panel {
+      margin: 16px;
+      padding: 16px;
+      border: 1px solid rgba(255, 176, 32, 0.35);
+      border-radius: 14px;
+      background: rgba(255, 176, 32, 0.08);
+      color: #ffdca8;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(1, 5, 10, 0.62);
+      backdrop-filter: blur(8px);
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      width: min(720px, 100%);
+      max-height: min(760px, 88vh);
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--panel);
+      box-shadow: 0 28px 90px rgba(0, 0, 0, 0.58);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .modal-title {
+      margin: 0;
+      color: var(--heading);
+      font-size: 1rem;
+    }
+
+    .modal-body {
+      padding: 14px 16px 18px;
+    }
+
+    .close {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel-soft);
+      color: var(--muted);
+      cursor: pointer;
+      padding: 7px 10px;
+    }
+
+    .pareto-list,
+    .budget-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .list-row {
+      display: grid;
+      grid-template-columns: minmax(130px, 1fr) minmax(90px, auto);
+      gap: 12px;
+      align-items: center;
+    }
+
+    .bar-line {
+      grid-column: 1 / -1;
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #0a1018;
+    }
+
+    .bar-line span {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+    }
+
+    .budget-duo {
+      display: grid;
+      grid-template-columns: minmax(140px, 1fr) minmax(120px, auto);
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .mini-track {
+      grid-column: 1 / -1;
+      position: relative;
+      height: 10px;
+      border-radius: 999px;
+      background: #0a1018;
+      overflow: hidden;
+    }
+
+    .mini-track span {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--green), var(--blue));
+    }
+
+    @media (max-width: 1100px) {
+      .status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 720px) {
+      .shell { padding: 12px; }
+      .topbar {
+        grid-template-columns: 1fr;
+        margin: -12px -12px 12px;
+        padding: 12px;
+      }
+      .actions { justify-content: flex-start; }
+      .status-grid { grid-template-columns: 1fr; }
+      .card-header { flex-direction: column; }
+      .controls { justify-content: flex-start; }
+      .select { width: 100%; min-width: 0; }
+      .chart-box { height: 300px; }
+      .progress-row { grid-template-columns: 1fr; }
+      .progress-value { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">PF</div>
+        <div>
+          <h1>Personal Finance Dashboard</h1>
+          <p class="subtitle" id="subtitle">Loading local CSV snapshot...</p>
+        </div>
+      </div>
+      <div class="actions">
+        <span class="pill" id="cacheStatus">Cache: loading</span>
+        <button class="btn" id="apiButton" type="button">JSON</button>
+        <button class="btn primary" id="refreshButton" type="button">Refresh Files</button>
+      </div>
+    </header>
+
+    <section class="status-grid" aria-label="Data status">
+      <div class="stat">
+        <p class="stat-label">Last Read</p>
+        <p class="stat-value" id="lastRead">-</p>
+      </div>
+      <div class="stat">
+        <p class="stat-label">Expense File</p>
+        <p class="stat-value" id="expenseFile">-</p>
+      </div>
+      <div class="stat">
+        <p class="stat-label">Budget File</p>
+        <p class="stat-value" id="budgetFile">-</p>
+      </div>
+      <div class="stat">
+        <p class="stat-label">Rows</p>
+        <p class="stat-value" id="rowCounts">-</p>
+      </div>
+    </section>
+
+    <div id="errorPanel" class="error-panel" hidden></div>
+
+    <main class="grid" id="dashboardGrid" hidden>
+      <section class="card large">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Annual Spend</h2>
+            <p class="card-copy">Toggle total spend or stacked category contribution by year.</p>
+          </div>
+          <div class="controls">
+            <div class="segmented" aria-label="Annual chart mode">
+              <button type="button" id="annualTotalButton" class="active">Total</button>
+              <button type="button" id="annualStackedButton">Stacked</button>
+            </div>
+          </div>
+        </div>
+        <div class="chart-box">
+          <canvas id="annualChart"></canvas>
+        </div>
+      </section>
+
+      <section class="card side">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Monthly Spend</h2>
+            <p class="card-copy">Pick a category, then toggle into subcategory stacks.</p>
+          </div>
+          <div class="controls">
+            <select class="select" id="monthlyCategorySelect" aria-label="Monthly category"></select>
+            <div class="segmented" aria-label="Monthly chart mode">
+              <button type="button" id="monthlyCategoryButton" class="active">Category</button>
+              <button type="button" id="monthlySubcategoryButton">Subcategory</button>
+            </div>
+          </div>
+        </div>
+        <div class="chart-scroll">
+          <div class="chart-box" id="monthlyChartBox">
+            <canvas id="monthlyChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Current Month Spend Vs Budget</h2>
+            <p class="card-copy" id="budgetSubtitle">Latest month in the expense CSV.</p>
+          </div>
+        </div>
+        <div class="budget-summary">
+          <h3 class="subsection-title">Total Month To Date</h3>
+          <p class="subsection-copy">Current month spend compared against the Grand Total budget row.</p>
+          <div class="progress-row">
+            <div class="progress-title">Total Month To Date</div>
+            <div class="track"><div class="fill" id="totalBudgetFill"></div></div>
+            <div class="progress-value" id="totalBudgetLabel">-</div>
+          </div>
+        </div>
+        <div class="budget-subsection">
+          <h3 class="subsection-title">Spend To Date By Category</h3>
+          <p class="subsection-copy">Uses category Total rows from the budget sheet.</p>
+          <div class="chart-box budget-chart">
+            <canvas id="budgetChart"></canvas>
+          </div>
+        </div>
+        <div class="budget-subsection">
+          <h3 class="subsection-title">Spend Month To Date By Subcategory</h3>
+          <p class="subsection-copy">Shows only subcategories with a positive monthly budget.</p>
+          <div class="chart-box subcategory-budget-chart">
+            <canvas id="subcategoryBudgetChart"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Details</h3>
+        <button class="close" id="modalClose" type="button">Close</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </section>
+  </div>
+
+  <script>
+    const API_URL = "/personal_finance/dashboard/";
+    const palette = [
+      "#2962ff", "#22c8db", "#00c087", "#ffb020", "#ff5b5b",
+      "#8b5cf6", "#14b8a6", "#f97316", "#e879f9", "#60a5fa",
+      "#a3e635", "#f43f5e"
+    ];
+    const gridColor = "rgba(120, 144, 173, 0.18)";
+    const tickColor = "#8a97a8";
+    let dashboardData = null;
+    let annualMode = "total";
+    let monthlyMode = "total";
+    let annualChart = null;
+    let monthlyChart = null;
+    let budgetChart = null;
+    let subcategoryBudgetChart = null;
+
+    const money = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0
+    });
+
+    function formatMoney(value) {
+      return money.format(Number(value || 0));
+    }
+
+    function pct(value) {
+      return `${Math.round(Number(value || 0))}%`;
+    }
+
+    function chartDefaults() {
+      Chart.defaults.color = tickColor;
+      Chart.defaults.borderColor = gridColor;
+      Chart.defaults.font.family = "Inter, system-ui, sans-serif";
+    }
+
+    function destroyChart(chart) {
+      if (chart) chart.destroy();
+    }
+
+    function colorFor(index) {
+      return palette[index % palette.length];
+    }
+
+    function unique(values) {
+      return [...new Set(values)];
+    }
+
+    function byKey(records, key, valueKey = "amount") {
+      const map = {};
+      records.forEach((record) => {
+        map[String(record[key])] = Number(record[valueKey] || 0);
+      });
+      return map;
+    }
+
+    function monthlySubcategoryDrilldown(month) {
+      const metrics = getMetrics();
+      const backendRows = metrics.monthly?.subcategory_pareto_by_month?.[month];
+      if (backendRows?.length) return backendRows;
+
+      const totals = {};
+      Object.values(metrics.monthly?.subcategory_stack_by_month_category || {}).forEach((records) => {
+        records
+          .filter((record) => record.Month === month)
+          .forEach((record) => {
+            const subcategory = record.Subcategory || "Unlabeled";
+            totals[subcategory] = (totals[subcategory] || 0) + Number(record.amount || 0);
+          });
+      });
+
+      return Object.entries(totals)
+        .map(([subcategory, amount]) => ({ subcategory, amount }))
+        .sort((a, b) => b.amount - a.amount);
+    }
+
+    function monthlyCategorySubcategoryDrilldown(month, category) {
+      const metrics = getMetrics();
+      const key = `${month}|${category}`;
+      const backendRows = metrics.monthly?.subcategory_pareto_by_month_category?.[key];
+      if (backendRows?.length) return backendRows;
+
+      const rows = metrics.monthly?.subcategory_stack_by_month_category?.[category] || [];
+      return rows
+        .filter((record) => record.Month === month)
+        .map((record) => ({
+          subcategory: record.Subcategory || "Unlabeled",
+          amount: Number(record.amount || 0)
+        }))
+        .sort((a, b) => b.amount - a.amount);
+    }
+
+    function getMetrics() {
+      return dashboardData?.metrics || {};
+    }
+
+    function renderMetadata(data) {
+      document.getElementById("cacheStatus").textContent = data.is_stale ? "Data: unavailable" : "Data: cached";
+      document.getElementById("subtitle").textContent = data.is_stale
+        ? "CSV data needs attention"
+        : "Interactive spend, category, and budget analytics";
+      document.getElementById("lastRead").textContent = data.last_read_at || "-";
+      document.getElementById("expenseFile").textContent = data.source_files?.expenses || "-";
+      document.getElementById("budgetFile").textContent = data.source_files?.budget || "-";
+      document.getElementById("rowCounts").textContent = data.row_counts
+        ? `${data.row_counts.metric_expenses || 0} metric rows / ${data.row_counts.expenses || 0} expenses`
+        : "-";
+    }
+
+    function showError(message) {
+      const panel = document.getElementById("errorPanel");
+      panel.hidden = false;
+      panel.textContent = message;
+      document.getElementById("dashboardGrid").hidden = true;
+    }
+
+    function showDashboard() {
+      document.getElementById("errorPanel").hidden = true;
+      document.getElementById("dashboardGrid").hidden = false;
+    }
+
+    function makeBarOptions({ stacked = false, horizontal = false, onClick = null } = {}) {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: horizontal ? "y" : "x",
+        interaction: { mode: "nearest", intersect: true },
+        plugins: {
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true }
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: ${formatMoney(ctx.raw)}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked,
+            grid: { color: horizontal ? gridColor : "transparent" },
+            ticks: {
+              color: tickColor,
+              callback: horizontal
+                ? (value) => formatMoney(value)
+                : function(value) { return this.getLabelForValue(value); }
+            }
+          },
+          y: {
+            stacked,
+            grid: { color: horizontal ? "transparent" : gridColor },
+            ticks: {
+              color: tickColor,
+              callback: horizontal
+                ? function(value) { return this.getLabelForValue(value); }
+                : (value) => formatMoney(value)
+            }
+          }
+        },
+        onClick
+      };
+    }
+
+    function populateCategorySelect() {
+      const select = document.getElementById("monthlyCategorySelect");
+      const categories = getMetrics().available_categories || [];
+      select.innerHTML = [
+        '<option value="__total__">Total</option>',
+        ...categories.map((category) => `<option value="${escapeAttr(category)}">${escapeHtml(category)}</option>`)
+      ].join("");
+    }
+
+    function renderAnnualChart() {
+      destroyChart(annualChart);
+      const metrics = getMetrics();
+      const ctx = document.getElementById("annualChart");
+
+      if (annualMode === "total") {
+        const records = metrics.annual?.total_by_year || [];
+        annualChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: records.map((row) => row.Year),
+            datasets: [{
+              label: "Total spend",
+              data: records.map((row) => row.amount),
+              backgroundColor: "rgba(41, 98, 255, 0.78)",
+              borderColor: "#6ea8ff",
+              borderWidth: 1,
+              borderRadius: 8
+            }]
+          },
+          options: makeBarOptions()
+        });
+        return;
+      }
+
+      const rows = metrics.annual?.category_stack_by_year || [];
+      const years = (metrics.available_years || []).map(String);
+      const categories = unique(rows.map((row) => row.Category));
+      const datasets = categories.map((category, index) => {
+        const categoryRows = rows.filter((row) => row.Category === category);
+        const values = byKey(categoryRows, "Year");
+        return {
+          label: category,
+          data: years.map((year) => values[year] || 0),
+          backgroundColor: colorFor(index),
+          borderWidth: 0,
+          borderRadius: 5
+        };
+      });
+
+      annualChart = new Chart(ctx, {
+        type: "bar",
+        data: { labels: years, datasets },
+        options: makeBarOptions({
+          stacked: true,
+          onClick: (_event, elements, chart) => {
+            if (!elements.length) return;
+            const element = elements[0];
+            const year = chart.data.labels[element.index];
+            const category = chart.data.datasets[element.datasetIndex].label;
+            const key = `${year}|${category}`;
+            showParetoModal(
+              `${category} subcategories in ${year}`,
+              metrics.annual?.subcategory_pareto_by_year_category?.[key] || [],
+              "subcategory"
+            );
+          }
+        })
+      });
+    }
+
+    function renderMonthlyChart() {
+      destroyChart(monthlyChart);
+      const metrics = getMetrics();
+      const selectedCategory = document.getElementById("monthlyCategorySelect").value;
+      const ctx = document.getElementById("monthlyChart");
+      const monthlyChartBox = document.getElementById("monthlyChartBox");
+      const monthCount = (metrics.available_months || []).length;
+      monthlyChartBox.style.minWidth = `${Math.max(980, monthCount * 74)}px`;
+      setMonthlyControls(selectedCategory);
+
+      if (selectedCategory === "__total__" && monthlyMode === "total") {
+        const records = metrics.monthly?.total_by_month || [];
+        monthlyChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: records.map((row) => row.Month),
+            datasets: [{
+              label: "Total spend",
+              data: records.map((row) => row.amount),
+              backgroundColor: "rgba(34, 200, 219, 0.72)",
+              borderColor: "#6ee7f2",
+              borderWidth: 1,
+              borderRadius: 8
+            }]
+          },
+          options: makeBarOptions({
+            onClick: (_event, elements, chart) => {
+              if (!elements.length) return;
+              const month = chart.data.labels[elements[0].index];
+              showParetoModal(
+                `Subcategory totals in ${month}`,
+                monthlySubcategoryDrilldown(month),
+                "subcategory"
+              );
+            }
+          })
+        });
+        return;
+      }
+
+      if (selectedCategory === "__total__" && monthlyMode === "category") {
+        const months = metrics.available_months || [];
+        const categoryMap = metrics.monthly?.category_by_month || {};
+        const categories = Object.keys(categoryMap);
+        const datasets = categories.map((category, index) => {
+          const values = byKey(categoryMap[category] || [], "Month");
+          return {
+            label: category,
+            data: months.map((month) => values[month] || 0),
+            backgroundColor: colorFor(index),
+            borderWidth: 0,
+            borderRadius: 5
+          };
+        });
+
+        monthlyChart = new Chart(ctx, {
+          type: "bar",
+          data: { labels: months, datasets },
+          options: makeBarOptions({
+            stacked: true,
+            onClick: (_event, elements, chart) => {
+              if (!elements.length) return;
+              const element = elements[0];
+              const month = chart.data.labels[element.index];
+              const category = chart.data.datasets[element.datasetIndex].label;
+              showParetoModal(
+                `${category} subcategories in ${month}`,
+                monthlyCategorySubcategoryDrilldown(month, category),
+                "subcategory"
+              );
+            }
+          })
+        });
+        return;
+      }
+
+      if (monthlyMode === "category") {
+        const records = metrics.monthly?.category_by_month?.[selectedCategory] || [];
+        monthlyChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: records.map((row) => row.Month),
+            datasets: [{
+              label: selectedCategory,
+              data: records.map((row) => row.amount),
+              backgroundColor: "rgba(41, 98, 255, 0.74)",
+              borderColor: "#6ea8ff",
+              borderWidth: 1,
+              borderRadius: 8
+            }]
+          },
+          options: makeBarOptions()
+        });
+        return;
+      }
+
+      const rows = metrics.monthly?.subcategory_stack_by_month_category?.[selectedCategory] || [];
+      const months = metrics.available_months || [];
+      const subcategories = unique(rows.map((row) => row.Subcategory));
+      const datasets = subcategories.map((subcategory, index) => {
+        const subRows = rows.filter((row) => row.Subcategory === subcategory);
+        const values = byKey(subRows, "Month");
+        return {
+          label: subcategory,
+          data: months.map((month) => values[month] || 0),
+          backgroundColor: colorFor(index),
+          borderWidth: 0,
+          borderRadius: 5
+        };
+      });
+
+      monthlyChart = new Chart(ctx, {
+        type: "bar",
+        data: { labels: months, datasets },
+        options: makeBarOptions({
+          stacked: true,
+          onClick: (_event, elements, chart) => {
+            if (!elements.length) return;
+            const element = elements[0];
+            const month = chart.data.labels[element.index];
+            const subcategory = chart.data.datasets[element.datasetIndex].label;
+            const key = `${month}|${selectedCategory}|${subcategory}`;
+            showParetoModal(
+              `${subcategory} merchants in ${month}`,
+              metrics.monthly?.merchant_pareto_by_month_category_subcategory?.[key] || [],
+              "merchant"
+            );
+          }
+        })
+      });
+    }
+
+    function renderBudgetSection() {
+      destroyChart(budgetChart);
+      destroyChart(subcategoryBudgetChart);
+      const budget = getMetrics().current_month_budget || {};
+      const spend = Number(budget.total_spend_mtd || 0);
+      const budgetTotal = Number(budget.total_budget || 0);
+      const used = budgetTotal ? Math.min((spend / budgetTotal) * 100, 140) : 0;
+      document.getElementById("budgetSubtitle").textContent = budget.month
+        ? `Latest expense month: ${budget.month}`
+        : "No valid expense month available";
+      document.getElementById("totalBudgetFill").style.width = `${Math.min(used, 100)}%`;
+      document.getElementById("totalBudgetLabel").textContent = `${formatMoney(spend)} / ${formatMoney(budgetTotal)} (${pct(used)})`;
+
+      const rows = budget.category_budget_vs_actual || [];
+      document.querySelector(".chart-box.budget-chart").style.height = `${Math.max(560, rows.length * 72)}px`;
+      const ctx = document.getElementById("budgetChart");
+      budgetChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: rows.map((row) => row.Category),
+          datasets: [
+            {
+              label: "Spend MTD",
+              data: rows.map((row) => row.spend_mtd),
+              backgroundColor: "rgba(41, 98, 255, 0.76)",
+              borderColor: "#6ea8ff",
+              borderWidth: 1,
+              borderRadius: 9,
+              barThickness: 14,
+              maxBarThickness: 14,
+              categoryPercentage: 0.72,
+              barPercentage: 0.7
+            },
+            {
+              label: "Monthly budget",
+              data: rows.map((row) => row.monthly_budget),
+              backgroundColor: "rgba(120, 144, 173, 0.24)",
+              borderColor: "rgba(215, 221, 232, 0.42)",
+              borderWidth: 1,
+              borderRadius: 9,
+              barThickness: 14,
+              maxBarThickness: 14,
+              categoryPercentage: 0.72,
+              barPercentage: 0.7
+            }
+          ]
+        },
+        options: makeBarOptions({
+          horizontal: true,
+          onClick: (_event, elements, chart) => {
+            if (!elements.length) return;
+            const category = chart.data.labels[elements[0].index];
+            const rows = budget.subcategory_budget_vs_actual_by_category?.[category] || [];
+            showBudgetModal(`${category} subcategory budget`, rows);
+          }
+        })
+      });
+
+      const subcategoryRows = budget.subcategory_budget_vs_actual || [];
+      document.querySelector(".chart-box.subcategory-budget-chart").style.height = `${Math.max(900, subcategoryRows.length * 62)}px`;
+      const subcategoryCtx = document.getElementById("subcategoryBudgetChart");
+      subcategoryBudgetChart = new Chart(subcategoryCtx, {
+        type: "bar",
+        data: {
+          labels: subcategoryRows.map((row) => `${row.Category} / ${row.Subcategory}`),
+          datasets: [
+            {
+              label: "Spend MTD",
+              data: subcategoryRows.map((row) => row.spend_mtd),
+              backgroundColor: "rgba(0, 192, 135, 0.72)",
+              borderColor: "rgba(94, 249, 197, 0.86)",
+              borderWidth: 1,
+              borderRadius: 9,
+              barThickness: 12,
+              maxBarThickness: 12,
+              categoryPercentage: 0.72,
+              barPercentage: 0.7
+            },
+            {
+              label: "Monthly budget",
+              data: subcategoryRows.map((row) => row.monthly_budget),
+              backgroundColor: "rgba(120, 144, 173, 0.24)",
+              borderColor: "rgba(215, 221, 232, 0.42)",
+              borderWidth: 1,
+              borderRadius: 9,
+              barThickness: 12,
+              maxBarThickness: 12,
+              categoryPercentage: 0.72,
+              barPercentage: 0.7
+            }
+          ]
+        },
+        options: makeBarOptions({ horizontal: true })
+      });
+    }
+
+    function renderAll() {
+      if (!dashboardData || dashboardData.is_stale) {
+        showError(dashboardData?.error_message || "Personal finance data is unavailable.");
+        return;
+      }
+      showDashboard();
+      renderMetadata(dashboardData);
+      populateCategorySelect();
+      renderAnnualChart();
+      renderMonthlyChart();
+      renderBudgetSection();
+    }
+
+    async function loadDashboard({ refresh = false } = {}) {
+      document.getElementById("cacheStatus").textContent = refresh ? "Cache: refreshing" : "Cache: loading";
+      const response = await fetch(refresh ? `${API_URL}?refresh=1` : API_URL, {
+        headers: { "Accept": "application/json" }
+      });
+      if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+      dashboardData = await response.json();
+      renderMetadata(dashboardData);
+      renderAll();
+    }
+
+    function showParetoModal(title, rows, labelKey) {
+      const maxAmount = Math.max(...rows.map((row) => Number(row.amount || 0)), 1);
+      const body = rows.length
+        ? `<ul class="pareto-list">${rows.map((row) => `
+            <li class="list-row">
+              <strong>${escapeHtml(row[labelKey] || "Unlabeled")}</strong>
+              <span>${formatMoney(row.amount)}</span>
+              <div class="bar-line"><span style="width:${Math.max((row.amount / maxAmount) * 100, 2)}%"></span></div>
+            </li>
+          `).join("")}</ul>`
+        : '<div class="empty">No drilldown data available for this selection.</div>';
+      openModal(title, body);
+    }
+
+    function showBudgetModal(title, rows) {
+      const body = rows.length
+        ? `<div class="budget-list">${rows.map((row) => {
+            const used = row.monthly_budget ? Math.min((row.spend_mtd / row.monthly_budget) * 100, 140) : 0;
+            return `
+              <div class="budget-duo">
+                <strong>${escapeHtml(row.Subcategory || "Unlabeled")}</strong>
+                <span>${formatMoney(row.spend_mtd)} / ${formatMoney(row.monthly_budget)}</span>
+                <div class="mini-track"><span style="width:${Math.min(used, 100)}%"></span></div>
+              </div>
+            `;
+          }).join("")}</div>`
+        : '<div class="empty">No budget drilldown data available for this category.</div>';
+      openModal(title, body);
+    }
+
+    function openModal(title, bodyHtml) {
+      document.getElementById("modalTitle").textContent = title;
+      document.getElementById("modalBody").innerHTML = bodyHtml;
+      document.getElementById("modalBackdrop").classList.add("open");
+      document.getElementById("modalBackdrop").setAttribute("aria-hidden", "false");
+    }
+
+    function closeModal() {
+      document.getElementById("modalBackdrop").classList.remove("open");
+      document.getElementById("modalBackdrop").setAttribute("aria-hidden", "true");
+    }
+
+    function setSegment(prefix, value) {
+      if (prefix === "annual") {
+        annualMode = value;
+        document.getElementById("annualTotalButton").classList.toggle("active", value === "total");
+        document.getElementById("annualStackedButton").classList.toggle("active", value === "stacked");
+      }
+      if (prefix === "monthly") {
+        monthlyMode = value;
+        document.getElementById("monthlyCategoryButton").classList.toggle("active", value === "category");
+        document.getElementById("monthlySubcategoryButton").classList.toggle("active", value === "subcategory");
+      }
+    }
+
+    function setMonthlyControls(selectedCategory) {
+      const isTotal = selectedCategory === "__total__";
+      const firstButton = document.getElementById("monthlyCategoryButton");
+      const secondButton = document.getElementById("monthlySubcategoryButton");
+
+      firstButton.textContent = isTotal ? "Total" : "Category";
+      secondButton.textContent = isTotal ? "Category" : "Subcategory";
+
+      if (isTotal && monthlyMode === "subcategory") {
+        monthlyMode = "category";
+      }
+      if (!isTotal && monthlyMode === "total") {
+        monthlyMode = "category";
+      }
+
+      firstButton.classList.toggle("active", isTotal ? monthlyMode === "total" : monthlyMode === "category");
+      secondButton.classList.toggle("active", isTotal ? monthlyMode === "category" : monthlyMode === "subcategory");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value);
+    }
+
+    document.getElementById("annualTotalButton").addEventListener("click", () => {
+      setSegment("annual", "total");
+      renderAnnualChart();
+    });
+    document.getElementById("annualStackedButton").addEventListener("click", () => {
+      setSegment("annual", "stacked");
+      renderAnnualChart();
+    });
+    document.getElementById("monthlyCategoryButton").addEventListener("click", () => {
+      const selectedCategory = document.getElementById("monthlyCategorySelect").value;
+      monthlyMode = selectedCategory === "__total__" ? "total" : "category";
+      setMonthlyControls(selectedCategory);
+      renderMonthlyChart();
+    });
+    document.getElementById("monthlySubcategoryButton").addEventListener("click", () => {
+      const selectedCategory = document.getElementById("monthlyCategorySelect").value;
+      monthlyMode = selectedCategory === "__total__" ? "category" : "subcategory";
+      setMonthlyControls(selectedCategory);
+      renderMonthlyChart();
+    });
+    document.getElementById("monthlyCategorySelect").addEventListener("change", () => {
+      const selectedCategory = document.getElementById("monthlyCategorySelect").value;
+      monthlyMode = selectedCategory === "__total__" ? "total" : "category";
+      setMonthlyControls(selectedCategory);
+      renderMonthlyChart();
+    });
+    document.getElementById("refreshButton").addEventListener("click", async () => {
+      try {
+        await loadDashboard({ refresh: true });
+      } catch (error) {
+        showError(error.message);
+      }
+    });
+    document.getElementById("apiButton").addEventListener("click", () => {
+      window.open(API_URL, "_blank", "noopener");
+    });
+    document.getElementById("modalClose").addEventListener("click", closeModal);
+    document.getElementById("modalBackdrop").addEventListener("click", (event) => {
+      if (event.target.id === "modalBackdrop") closeModal();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeModal();
+    });
+
+    chartDefaults();
+    loadDashboard().catch((error) => showError(error.message));
+  </script>
+</body>
+</html>
