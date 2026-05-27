@@ -475,8 +475,113 @@
       background: linear-gradient(90deg, var(--green), var(--blue));
     }
 
+    .recent-expense-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      padding: 0 16px 16px;
+    }
+
+    .recent-expense-panel {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .recent-expense-panel h3 {
+      margin: 0;
+      color: var(--heading);
+      font-size: 0.98rem;
+    }
+
+    .recent-table-shell {
+      margin-top: 12px;
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      overflow: auto;
+      background: var(--panel-soft);
+    }
+
+    .recent-expense-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .recent-expense-table th,
+    .recent-expense-table td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border-soft);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .recent-expense-table th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: var(--panel-raised);
+    }
+
+    .recent-expense-table tbody tr.recent-expense-row {
+      cursor: pointer;
+    }
+
+    .recent-expense-table tbody tr.recent-expense-row:hover {
+      background: rgba(41, 98, 255, 0.08);
+    }
+
+    .recent-expense-table tbody tr.recent-expense-row:focus-visible {
+      outline: 2px solid rgba(41, 98, 255, 0.65);
+      outline-offset: -2px;
+    }
+
+    .expense-description {
+      margin: 0;
+      color: var(--text);
+      font-size: 0.92rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .recent-expense-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .recent-expense-table .amount-cell {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: var(--heading);
+      white-space: nowrap;
+    }
+
+    .recent-empty {
+      margin: 0;
+      padding: 18px 14px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      text-align: center;
+    }
+
+    .recent-table-shell.has-rows .recent-empty {
+      display: none;
+    }
+
+    .recent-table-shell:not(.has-rows) .recent-expense-table {
+      display: none;
+    }
+
     @media (max-width: 1100px) {
       .status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .recent-expense-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 720px) {
@@ -603,6 +708,55 @@
           <p class="subsection-copy">Shows only subcategories with a positive monthly budget.</p>
           <div class="chart-box subcategory-budget-chart">
             <canvas id="subcategoryBudgetChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Recent Expenses</h2>
+            <p class="card-copy">Latest transactions from Apple Card and BoA Checking.</p>
+          </div>
+        </div>
+        <div class="recent-expense-grid">
+          <div class="recent-expense-panel">
+            <h3>Apple Card</h3>
+            <p class="subsection-copy">10 most recent expenses.</p>
+            <div class="recent-table-shell" id="appleCardTableShell">
+              <table class="recent-expense-table" aria-label="Recent Apple Card expenses">
+                <thead>
+                  <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Subcategory</th>
+                    <th scope="col">Merchant</th>
+                    <th scope="col">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="appleCardTableBody"></tbody>
+              </table>
+              <p class="recent-empty" id="appleCardEmpty">No recent Apple Card expenses.</p>
+            </div>
+          </div>
+          <div class="recent-expense-panel">
+            <h3>BoA Checking</h3>
+            <p class="subsection-copy">10 most recent expenses from BoA Checking accounts.</p>
+            <div class="recent-table-shell" id="boaCheckingTableShell">
+              <table class="recent-expense-table" aria-label="Recent BoA Checking expenses">
+                <thead>
+                  <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Subcategory</th>
+                    <th scope="col">Merchant</th>
+                    <th scope="col">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="boaCheckingTableBody"></tbody>
+              </table>
+              <p class="recent-empty" id="boaCheckingEmpty">No recent BoA Checking expenses.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -1083,6 +1237,65 @@
       });
     }
 
+    function showRecentExpenseDescriptionModal(row) {
+      const merchant = (row.Merchant || "").trim() || "Expense";
+      const date = (row.Date || "").trim();
+      const title = date ? `${merchant} · ${date}` : merchant;
+      const description = String(row.Description || "").trim();
+      const body = description
+        ? `<p class="expense-description">${escapeHtml(description)}</p>`
+        : '<p class="empty">No description available for this expense.</p>';
+      openModal(title, body);
+    }
+
+    function bindRecentExpenseRowHandlers(container, rows) {
+      container.querySelectorAll("tr.recent-expense-row").forEach((rowEl, index) => {
+        const open = () => showRecentExpenseDescriptionModal(rows[index]);
+        rowEl.addEventListener("click", open);
+        rowEl.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            open();
+          }
+        });
+      });
+    }
+
+    function renderRecentExpenseTable(shellId, bodyId, rows) {
+      const shell = document.getElementById(shellId);
+      const body = document.getElementById(bodyId);
+      const hasRows = Array.isArray(rows) && rows.length > 0;
+      shell.classList.toggle("has-rows", hasRows);
+      if (!hasRows) {
+        body.innerHTML = "";
+        return;
+      }
+      body.innerHTML = rows.map((row) => `
+        <tr class="recent-expense-row" tabindex="0" role="button" aria-label="View expense description">
+          <td>${escapeHtml(row.Date || "")}</td>
+          <td>${escapeHtml(row.Category || "")}</td>
+          <td>${escapeHtml(row.Subcategory || "")}</td>
+          <td>${escapeHtml(row.Merchant || "")}</td>
+          <td class="amount-cell">${formatMoney(row.Amount)}</td>
+        </tr>
+      `).join("");
+      bindRecentExpenseRowHandlers(body, rows);
+    }
+
+    function renderRecentExpensesSection() {
+      const recent = dashboardData.recent_expenses || {};
+      renderRecentExpenseTable(
+        "appleCardTableShell",
+        "appleCardTableBody",
+        recent.apple_card || []
+      );
+      renderRecentExpenseTable(
+        "boaCheckingTableShell",
+        "boaCheckingTableBody",
+        recent.boa_checking || []
+      );
+    }
+
     function renderAll() {
       if (!dashboardData || dashboardData.is_stale) {
         showError(dashboardData?.error_message || "Personal finance data is unavailable.");
@@ -1094,6 +1307,7 @@
       renderAnnualChart();
       renderMonthlyChart();
       renderBudgetSection();
+      renderRecentExpensesSection();
     }
 
     async function loadDashboard({ refresh = false } = {}) {

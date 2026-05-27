@@ -31,6 +31,9 @@ TEXT_COLUMNS = [
     "Comments",
 ]
 PREVIEW_LIMIT = 10
+RECENT_EXPENSE_LIMIT = 10
+RECENT_EXPENSE_TABLE_COLUMNS = ["Date", "Category", "Subcategory", "Merchant", "Amount"]
+RECENT_EXPENSE_PAYLOAD_COLUMNS = [*RECENT_EXPENSE_TABLE_COLUMNS, "Description"]
 
 
 def _stale_context(message: str) -> dict[str, Any]:
@@ -44,6 +47,7 @@ def _stale_context(message: str) -> dict[str, Any]:
         "expense_preview": [],
         "budget_preview": [],
         "metrics": {},
+        "recent_expenses": {"apple_card": [], "boa_checking": []},
     }
 
 
@@ -133,6 +137,26 @@ def _serialize_budget_preview(df: pd.DataFrame) -> list[dict[str, Any]]:
     preview["Monthly_Budget"] = preview["Monthly_Budget"].fillna(0.0)
     preview["Annual_Budget"] = preview["Annual_Budget"].fillna(0.0)
     return preview.to_dict(orient="records")
+
+
+def _serialize_recent_expense_rows(df: pd.DataFrame) -> list[dict[str, Any]]:
+    if df.empty:
+        return []
+
+    rows = df.sort_values("Date", ascending=False).head(RECENT_EXPENSE_LIMIT).copy()
+    rows["Date"] = rows["Date"].dt.strftime("%Y-%m-%d").fillna("")
+    rows["Amount"] = rows["Amount"].fillna(0.0)
+    return rows[RECENT_EXPENSE_PAYLOAD_COLUMNS].to_dict(orient="records")
+
+
+def _build_recent_expenses(expense_df: pd.DataFrame) -> dict[str, list[dict[str, Any]]]:
+    valid = expense_df.dropna(subset=["Date", "Amount"]).copy()
+    apple_card = valid.loc[valid["Source"].eq("Apple Card")]
+    boa_checking = valid.loc[valid["Source"].str.casefold().eq("boa checking")]
+    return {
+        "apple_card": _serialize_recent_expense_rows(apple_card),
+        "boa_checking": _serialize_recent_expense_rows(boa_checking),
+    }
 
 
 def _round_amount(value: Any) -> float:
@@ -529,6 +553,7 @@ def _build_context_from_files() -> dict[str, Any]:
         "expense_preview": _serialize_expense_preview(expense_df),
         "budget_preview": _serialize_budget_preview(budget_df),
         "metrics": _build_metrics(metric_expense_df, budget_df),
+        "recent_expenses": _build_recent_expenses(metric_expense_df),
     }
 
 
