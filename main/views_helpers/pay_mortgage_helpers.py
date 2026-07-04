@@ -19,7 +19,7 @@ MORTGAGE_SCHEDULE: Dict[str, Dict[str, int]] = {
     'Apr 2026': {'principal': 243755, 'interest_paid': 19471},
     'May 2026': {'principal': 233349, 'interest_paid': 20842},
     'Jun 2026': {'principal': 216773, 'interest_paid': 22155},
-    'Jul 2026': {'principal': 200103, 'interest_paid': 23374},
+    'Jul 2026': {'principal': 199926, 'interest_paid': 23793},
     'Aug 2026': {'principal': 183340, 'interest_paid': 24500},
     'Sep 2026': {'principal': 166482, 'interest_paid': 25531},
     'Oct 2026': {'principal': 149530, 'interest_paid': 26467},
