@@ -16,6 +16,11 @@ from main.views_helpers.volatility_dashboard_helpers import (
     get_volatility_dashboard_graphs_payload,
 )
 from main.views_helpers.volatility_dashboard_helpers import get_volatility_dashboard_graphs_ui_payload
+from main.views_helpers.tag2_0_leaderboard_helpers import (
+    LeaderboardRequestError,
+    get_leaderboard,
+    submit_leaderboard_score,
+)
 
 
 
@@ -70,6 +75,23 @@ def pay_mortgage(request):
 
 def giotube(request):
     return render(request, 'main/giotube.html', {'videos': build_giotube_playlist()})
+
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def tag2_0_leaderboard(request):
+    if request.method == "GET":
+        return JsonResponse(get_leaderboard(), json_dumps_params={"indent": 2})
+
+    try:
+        response = submit_leaderboard_score(request)
+    except LeaderboardRequestError as error:
+        return JsonResponse(
+            {"status": "error", "message": error.message},
+            status=error.status_code,
+        )
+
+    return JsonResponse(response, json_dumps_params={"indent": 2})
 
 
 def trading_dashboard(request):
