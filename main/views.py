@@ -94,6 +94,10 @@ def tag2_0_leaderboard(request):
     return JsonResponse(response, json_dumps_params={"indent": 2})
 
 
+def tag2_0_leaderboard_ui(request):
+    return render(request, "main/tag2_0_leaderboard.html")
+
+
 def trading_dashboard(request):
     context = build_trading_dashboard_context()
     return render(request, 'main/trading_dashboard.html', context)

@@ -12,6 +12,7 @@ class TagLeaderboardTests(TestCase):
         self.override_settings = override_settings(BASE_DIR=Path(self.temp_dir.name))
         self.override_settings.enable()
         self.url = reverse("tag2_0_leaderboard")
+        self.ui_url = reverse("tag2_0_leaderboard_ui")
 
     def tearDown(self):
         self.override_settings.disable()
@@ -34,6 +35,18 @@ class TagLeaderboardTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"top_10_scores": []})
         self.assertFalse(self.leaderboard_path.exists())
+
+    def test_ui_route_renders_leaderboard_template(self):
+        response = self.client.get(self.ui_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "High Scores")
+
+    def test_ui_includes_json_leaderboard_url(self):
+        response = self.client.get(self.ui_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'data-leaderboard-url="{self.url}"')
 
     def test_post_requires_json_content_type(self):
         response = self.client.post(self.url, data={"name": "Diego", "score": 10})

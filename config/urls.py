@@ -26,6 +26,7 @@ urlpatterns = [
     path('pay_mortgage/', views.pay_mortgage, name='pay_mortgage'),
     path('giotube/', views.giotube, name='giotube'),
     path('tag2_0/leaderboard/', views.tag2_0_leaderboard, name='tag2_0_leaderboard'),
+    path('tag2_0/leaderboard/ui/', views.tag2_0_leaderboard_ui, name='tag2_0_leaderboard_ui'),
     path('personal_finance/dashboard/', views.personal_finance_dashboard, name='personal_finance_dashboard'),
     path('personal_finance/dashboard/ui/', views.personal_finance_dashboard_ui, name='personal_finance_dashboard_ui'),
     path('trading/dashboard/', views.trading_dashboard, name='trading_dashboard'),

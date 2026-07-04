@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TAG 2.0 High Scores</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050a17;
+      --panel: rgba(9, 16, 35, 0.92);
+      --panel-soft: rgba(18, 30, 58, 0.86);
+      --panel-deep: rgba(12, 22, 43, 0.94);
+      --blue: #1f8cff;
+      --blue-soft: rgba(31, 140, 255, 0.28);
+      --blue-glow: rgba(31, 140, 255, 0.55);
+      --green: #36ff8f;
+      --yellow: #ffd740;
+      --text: #f4f7ff;
+      --muted: #9aa8be;
+      --danger: #ff5576;
+      --shadow: rgba(0, 0, 0, 0.45);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(31, 140, 255, 0.2), transparent 28rem),
+        radial-gradient(circle at 90% 18%, rgba(54, 255, 143, 0.1), transparent 22rem),
+        linear-gradient(135deg, #030612 0%, #071326 52%, #040816 100%);
+      color: var(--text);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(31, 140, 255, 0.09) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(31, 140, 255, 0.09) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: radial-gradient(circle at center, black, transparent 78%);
+      opacity: 0.42;
+      transform: perspective(600px) rotateX(58deg) translateY(9rem);
+      transform-origin: center bottom;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      min-height: 100vh;
+      place-items: center;
+      padding: clamp(14px, 4vw, 36px);
+    }
+
+    .leaderboard {
+      width: min(980px, 100%);
+      min-height: min(720px, calc(100vh - 28px));
+      padding: clamp(18px, 4vw, 34px);
+      border: 2px solid rgba(69, 163, 255, 0.95);
+      border-radius: clamp(20px, 4vw, 30px);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 22%),
+        var(--panel);
+      box-shadow:
+        0 0 0 4px rgba(31, 140, 255, 0.12),
+        0 0 42px var(--blue-soft),
+        0 26px 80px var(--shadow),
+        inset 0 0 34px rgba(31, 140, 255, 0.12);
+      animation: panelPulse 4.8s ease-in-out infinite;
+    }
+
+    .hero {
+      display: grid;
+      gap: 14px;
+      justify-items: center;
+      margin-bottom: clamp(20px, 5vw, 32px);
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border: 1px solid rgba(54, 255, 143, 0.35);
+      border-radius: 999px;
+      background: rgba(54, 255, 143, 0.08);
+      color: var(--green);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--green);
+      box-shadow: 0 0 16px var(--green);
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--text);
+      font-size: clamp(2.45rem, 11vw, 4.9rem);
+      font-weight: 900;
+      line-height: 0.9;
+      letter-spacing: clamp(0.02em, 0.9vw, 0.08em);
+      text-transform: uppercase;
+      text-shadow: 0 0 28px rgba(244, 247, 255, 0.22);
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 3vw, 1.18rem);
+      font-weight: 700;
+    }
+
+    .status-line {
+      min-height: 1.35em;
+      margin: 0;
+      color: var(--green);
+      font-size: clamp(0.95rem, 2.5vw, 1.08rem);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .refresh-button {
+      border: 1px solid rgba(31, 140, 255, 0.65);
+      border-radius: 999px;
+      padding: 8px 14px;
+      background: rgba(31, 140, 255, 0.12);
+      color: var(--text);
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .refresh-button:hover {
+      border-color: rgba(54, 255, 143, 0.75);
+      box-shadow: 0 0 22px rgba(31, 140, 255, 0.24);
+      transform: translateY(-1px);
+    }
+
+    .refresh-button:disabled {
+      cursor: wait;
+      opacity: 0.64;
+      transform: none;
+    }
+
+    .scoreboard {
+      display: grid;
+      gap: 8px;
+    }
+
+    .score-header,
+    .score-row {
+      display: grid;
+      grid-template-columns: 0.55fr 1.2fr 2.1fr 0.9fr 3fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .score-header {
+      padding: 0 10px 4px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 800;
+    }
+
+    .score-row {
+      min-height: 44px;
+      padding: 10px;
+      border: 1px solid rgba(72, 117, 190, 0.08);
+      border-radius: 11px;
+      background: linear-gradient(90deg, var(--panel-soft), var(--panel-deep));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rowIn 420ms ease forwards;
+      transition: transform 170ms ease, border-color 170ms ease, box-shadow 170ms ease;
+    }
+
+    .score-row:nth-child(odd) {
+      background: linear-gradient(90deg, rgba(15, 27, 52, 0.95), rgba(10, 20, 39, 0.95));
+    }
+
+    .score-row:hover {
+      border-color: rgba(31, 140, 255, 0.46);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22), 0 0 18px rgba(31, 140, 255, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .rank {
+      color: var(--yellow);
+      font-size: 1.04rem;
+      font-weight: 900;
+      text-align: center;
+      text-shadow: 0 0 14px rgba(255, 215, 64, 0.22);
+    }
+
+    .date,
+    .message {
+      color: #d1d9e8;
+    }
+
+    .name {
+      min-width: 0;
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .score {
+      color: var(--green);
+      font-size: 1.08rem;
+      font-weight: 950;
+      text-shadow: 0 0 14px rgba(54, 255, 143, 0.28);
+      animation: scoreGlow 2.4s ease-in-out infinite;
+    }
+
+    .truncate {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .state-card {
+      display: grid;
+      min-height: 210px;
+      place-items: center;
+      padding: 28px;
+      border: 1px dashed rgba(31, 140, 255, 0.44);
+      border-radius: 18px;
+      background: rgba(10, 20, 41, 0.62);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .state-card strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text);
+      font-size: 1.25rem;
+    }
+
+    .state-card.error {
+      border-color: rgba(255, 85, 118, 0.5);
+      color: #ffc3cf;
+    }
+
+    .state-card.error strong {
+      color: var(--danger);
+    }
+
+    @media (max-width: 720px) {
+      .leaderboard {
+        min-height: calc(100vh - 24px);
+      }
+
+      .score-header {
+        display: none;
+      }
+
+      .score-row {
+        grid-template-columns: auto 1fr;
+        gap: 8px 12px;
+        padding: 14px;
+      }
+
+      .score-row > span {
+        display: grid;
+        gap: 2px;
+      }
+
+      .score-row > span::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-size: 0.68rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .rank {
+        grid-row: span 4;
+        align-self: stretch;
+        display: grid;
+        place-items: center;
+        width: 40px;
+        border-right: 1px solid rgba(154, 168, 190, 0.16);
+        font-size: 1.22rem;
+      }
+
+      .message,
+      .date,
+      .name,
+      .score {
+        text-align: left;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .page {
+        padding: 10px;
+      }
+
+      .leaderboard {
+        padding: 16px;
+        border-radius: 20px;
+      }
+
+      .rank {
+        width: 34px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+
+    @keyframes panelPulse {
+      0%, 100% {
+        box-shadow:
+          0 0 0 4px rgba(31, 140, 255, 0.12),
+          0 0 34px rgba(31, 140, 255, 0.3),
+          0 26px 80px var(--shadow),
+          inset 0 0 34px rgba(31, 140, 255, 0.12);
+      }
+      50% {
+        box-shadow:
+          0 0 0 4px rgba(31, 140, 255, 0.18),
+          0 0 58px var(--blue-glow),
+          0 26px 80px var(--shadow),
+          inset 0 0 46px rgba(31, 140, 255, 0.18);
+      }
+    }
+
+    @keyframes rowIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes scoreGlow {
+      0%, 100% {
+        filter: drop-shadow(0 0 0 rgba(54, 255, 143, 0));
+      }
+      50% {
+        filter: drop-shadow(0 0 8px rgba(54, 255, 143, 0.42));
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="leaderboard" aria-labelledby="leaderboard-title">
+      <header class="hero">
+        <div class="eyebrow">TAG 2.0 Online</div>
+        <h1 id="leaderboard-title">High Scores</h1>
+        <p class="subtitle">Top 10 online scores</p>
+        <p class="status-line" id="statusLine">Loading high scores...</p>
+        <div class="toolbar">
+          <button class="refresh-button" id="refreshButton" type="button">Refresh Scores</button>
+          <span id="scoreCount">0 scores loaded</span>
+          <span aria-hidden="true">|</span>
+          <span id="lastUpdated">Waiting for data</span>
+        </div>
+      </header>
+
+      <div
+        class="scoreboard"
+        id="scoreboard"
+        data-leaderboard-url="{% url 'tag2_0_leaderboard' %}"
+        aria-live="polite"
+      >
+        <div class="state-card">
+          <div>
+            <strong>Loading leaderboard</strong>
+            Connecting to the high-score server...
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const scoreboard = document.querySelector("#scoreboard");
+      const statusLine = document.querySelector("#statusLine");
+      const scoreCount = document.querySelector("#scoreCount");
+      const lastUpdated = document.querySelector("#lastUpdated");
+      const refreshButton = document.querySelector("#refreshButton");
+      const leaderboardUrl = scoreboard.dataset.leaderboardUrl;
+
+      const escapeHtml = (value) => String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+      const formatDate = (value) => {
+        if (!value) {
+          return "Unknown";
+        }
+
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return String(value).slice(0, 10);
+        }
+
+        return date.toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        });
+      };
+
+      const setMeta = (scores) => {
+        const scoreLabel = scores.length === 1 ? "score" : "scores";
+        scoreCount.textContent = `${scores.length} ${scoreLabel} loaded`;
+        lastUpdated.textContent = `Updated ${new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}`;
+      };
+
+      const renderState = (title, message, isError = false) => {
+        scoreboard.innerHTML = `
+          <div class="state-card${isError ? " error" : ""}">
+            <div>
+              <strong>${title}</strong>
+              ${message}
+            </div>
+          </div>
+        `;
+      };
+
+      const renderScores = (scores) => {
+        if (!scores.length) {
+          statusLine.textContent = "No high scores submitted yet.";
+          setMeta(scores);
+          renderState("No scores yet", "Be the first player to claim the leaderboard.");
+          return;
+        }
+
+        statusLine.textContent = "High scores loaded online.";
+        setMeta(scores);
+
+        const header = `
+          <div class="score-header" aria-hidden="true">
+            <span>Rank</span>
+            <span>Date</span>
+            <span>Name</span>
+            <span>Score</span>
+            <span>Message</span>
+          </div>
+        `;
+
+        const rows = scores.slice(0, 10).map((entry, index) => {
+          const message = entry.message || "No message";
+          const name = entry.name || "Anonymous";
+          const score = Number.isInteger(entry.score) ? entry.score : 0;
+          const displayDate = formatDate(entry.date);
+
+          return `
+            <article class="score-row" style="animation-delay: ${index * 70}ms">
+              <span class="rank" data-label="Rank">${index + 1}</span>
+              <span class="date truncate" data-label="Date" title="${escapeHtml(displayDate)}">${escapeHtml(displayDate)}</span>
+              <span class="name truncate" data-label="Name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+              <span class="score" data-label="Score">${score}</span>
+              <span class="message truncate" data-label="Message" title="${escapeHtml(message)}">${escapeHtml(message)}</span>
+            </article>
+          `;
+        }).join("");
+
+        scoreboard.innerHTML = `${header}${rows}`;
+      };
+
+      const loadScores = async () => {
+        refreshButton.disabled = true;
+        statusLine.textContent = "Syncing high scores...";
+
+        try {
+          const response = await fetch(leaderboardUrl, {
+            headers: { "Accept": "application/json" },
+            cache: "no-store",
+          });
+
+          if (!response.ok) {
+            throw new Error(`Leaderboard request failed with ${response.status}`);
+          }
+
+          const payload = await response.json();
+          const scores = Array.isArray(payload.top_10_scores) ? payload.top_10_scores : [];
+          renderScores(scores);
+        } catch (error) {
+          statusLine.textContent = "Could not load high scores.";
+          renderState(
+            "Connection error",
+            "The leaderboard could not be loaded. Try refreshing again.",
+            true
+          );
+          console.error(error);
+        } finally {
+          refreshButton.disabled = false;
+        }
+      };
+
+      refreshButton.addEventListener("click", loadScores);
+      loadScores();
+    })();
+  </script>
+</body>
+</html>
