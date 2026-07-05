@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tag 2.0 | Download for Mac</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --black: #030306;
+      --ink: #070a11;
+      --charcoal: #11141c;
+      --steel: #1d2530;
+      --red: #ff3158;
+      --red-deep: #8f1830;
+      --cyan: #3de9ff;
+      --amber: #ffb02e;
+      --violet: #7b45ff;
+      --text: #f6f8ff;
+      --muted: #a3abbc;
+      --line: rgba(255, 255, 255, 0.12);
+      --panel: rgba(13, 17, 27, 0.82);
+      --shadow: rgba(0, 0, 0, 0.58);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 8% 8%, rgba(255, 49, 88, 0.16), transparent 24rem),
+        radial-gradient(circle at 86% 18%, rgba(61, 233, 255, 0.12), transparent 26rem),
+        linear-gradient(135deg, var(--black) 0%, #0b0d18 48%, #05070d 100%);
+      color: var(--text);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(61, 233, 255, 0.075) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 49, 88, 0.055) 1px, transparent 1px);
+      background-size: 46px 46px;
+      mask-image: linear-gradient(to bottom, transparent, black 18%, black 74%, transparent);
+      opacity: 0.42;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.028) 0,
+        rgba(255, 255, 255, 0.028) 1px,
+        transparent 1px,
+        transparent 5px
+      );
+      opacity: 0.24;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    video {
+      font: inherit;
+    }
+
+    .page-shell {
+      position: relative;
+    }
+
+    .hero {
+      position: relative;
+      display: grid;
+      min-height: 96svh;
+      align-items: end;
+      overflow: hidden;
+      padding: clamp(20px, 4vw, 48px);
+    }
+
+    .hero-media,
+    .hero-media video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .hero-media video {
+      object-fit: cover;
+      filter: saturate(1.18) contrast(1.12);
+    }
+
+    .hero-media::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(3, 3, 6, 0.92), rgba(3, 3, 6, 0.56) 42%, rgba(3, 3, 6, 0.78)),
+        linear-gradient(0deg, rgba(3, 3, 6, 0.96), transparent 46%, rgba(3, 3, 6, 0.32));
+    }
+
+    .topbar {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      z-index: 20;
+      display: flex;
+      width: min(1120px, calc(100% - 28px));
+      min-height: 54px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      transform: translateX(-50%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: rgba(5, 7, 13, 0.7);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(16px);
+      padding: 8px 10px 8px 14px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      width: 12px;
+      height: 12px;
+      background: var(--red);
+      box-shadow: 0 0 18px rgba(255, 49, 88, 0.9);
+      transform: rotate(45deg);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 800;
+    }
+
+    .nav a {
+      border-radius: 6px;
+      padding: 9px 10px;
+      transition: color 160ms ease, background 160ms ease;
+    }
+
+    .nav a:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text);
+    }
+
+    .button {
+      display: inline-flex;
+      min-height: 46px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      padding: 12px 18px;
+      color: var(--text);
+      font-weight: 900;
+      line-height: 1;
+      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+    }
+
+    .button-primary {
+      border-color: rgba(255, 49, 88, 0.84);
+      background: linear-gradient(135deg, var(--red), var(--red-deep));
+      box-shadow: 0 0 24px rgba(255, 49, 88, 0.24), 0 14px 32px rgba(0, 0, 0, 0.34);
+    }
+
+    .button-primary:hover {
+      box-shadow: 0 0 34px rgba(255, 49, 88, 0.42), 0 18px 42px rgba(0, 0, 0, 0.44);
+    }
+
+    .button-secondary {
+      background: rgba(255, 255, 255, 0.075);
+    }
+
+    .button-secondary:hover {
+      border-color: rgba(61, 233, 255, 0.6);
+      box-shadow: 0 0 22px rgba(61, 233, 255, 0.16);
+    }
+
+    .button-scoreboard {
+      border-color: rgba(61, 233, 255, 0.5);
+      background:
+        linear-gradient(135deg, rgba(61, 233, 255, 0.15), rgba(123, 69, 255, 0.08)),
+        rgba(255, 255, 255, 0.07);
+      box-shadow: inset 0 0 18px rgba(61, 233, 255, 0.08);
+    }
+
+    .button-scoreboard:hover {
+      border-color: rgba(61, 233, 255, 0.82);
+      box-shadow: 0 0 28px rgba(61, 233, 255, 0.2), inset 0 0 22px rgba(61, 233, 255, 0.1);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      width: min(1180px, 100%);
+      gap: clamp(22px, 3vw, 34px);
+      grid-template-columns: minmax(0, 1.02fr) minmax(300px, 0.58fr);
+      align-items: end;
+      margin: 0 auto;
+      padding-top: 110px;
+    }
+
+    .hero-copy {
+      display: grid;
+      gap: 18px;
+      padding-bottom: clamp(20px, 6vw, 72px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 9px;
+      border: 1px solid rgba(61, 233, 255, 0.32);
+      border-radius: 6px;
+      background: rgba(61, 233, 255, 0.08);
+      color: var(--cyan);
+      padding: 8px 10px;
+      font-size: 0.76rem;
+      font-weight: 950;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--cyan);
+      box-shadow: 0 0 16px var(--cyan);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      max-width: 900px;
+      font-size: clamp(4rem, 14vw, 9.8rem);
+      font-weight: 1000;
+      letter-spacing: 0;
+      line-height: 0.82;
+      text-transform: uppercase;
+      text-shadow:
+        0 0 24px rgba(255, 49, 88, 0.24),
+        0 6px 0 rgba(0, 0, 0, 0.28);
+    }
+
+    .hero-tagline {
+      max-width: 780px;
+      color: #eef3ff;
+      font-size: clamp(1.22rem, 2.6vw, 2.05rem);
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .hero-pitch {
+      max-width: 660px;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.5vw, 1.16rem);
+      line-height: 1.65;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 800;
+    }
+
+    .hero-meta span {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 7px 9px;
+    }
+
+    .sprite-stage {
+      position: relative;
+      display: grid;
+      min-height: 560px;
+      align-items: end;
+      justify-items: center;
+      overflow: hidden;
+    }
+
+    .sprite-stage::before {
+      content: "";
+      position: absolute;
+      right: 3%;
+      bottom: 6%;
+      width: min(460px, 78vw);
+      aspect-ratio: 1;
+      border: 1px solid rgba(61, 233, 255, 0.18);
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(61, 233, 255, 0.13), transparent 56%),
+        conic-gradient(from 90deg, transparent, rgba(255, 49, 88, 0.16), transparent, rgba(61, 233, 255, 0.13), transparent);
+      animation: slowSpin 18s linear infinite;
+    }
+
+    .hero-sprite {
+      position: relative;
+      z-index: 2;
+      width: min(520px, 80vw);
+      filter: drop-shadow(0 24px 44px rgba(0, 0, 0, 0.72)) drop-shadow(0 0 28px rgba(61, 233, 255, 0.12));
+      image-rendering: auto;
+      animation: spriteFloat 3.4s ease-in-out infinite;
+    }
+
+    .section {
+      position: relative;
+      padding: clamp(62px, 9vw, 110px) clamp(20px, 4vw, 48px);
+    }
+
+    .section-inner {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .section-header {
+      display: grid;
+      max-width: 760px;
+      gap: 12px;
+      margin-bottom: clamp(24px, 4vw, 38px);
+    }
+
+    .kicker {
+      color: var(--red);
+      font-size: 0.78rem;
+      font-weight: 950;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-size: clamp(2rem, 5vw, 4.4rem);
+      font-weight: 950;
+      letter-spacing: 0;
+      line-height: 0.96;
+      text-transform: uppercase;
+    }
+
+    .section-header p {
+      color: var(--muted);
+      font-size: clamp(1rem, 1.7vw, 1.14rem);
+      line-height: 1.65;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .video-card,
+    .feature-tile,
+    .character-card,
+    .download-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02)), var(--panel);
+      box-shadow: 0 22px 50px var(--shadow);
+    }
+
+    .video-card {
+      overflow: hidden;
+      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .video-card:hover {
+      border-color: rgba(61, 233, 255, 0.42);
+      box-shadow: 0 26px 56px rgba(0, 0, 0, 0.62), 0 0 24px rgba(61, 233, 255, 0.12);
+      transform: translateY(-4px);
+    }
+
+    .video-frame {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .video-frame video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      opacity: 0.92;
+      transition: transform 260ms ease, opacity 260ms ease;
+    }
+
+    .video-card:hover video {
+      opacity: 1;
+      transform: scale(1.035);
+    }
+
+    .video-label {
+      display: grid;
+      gap: 7px;
+      padding: 16px;
+    }
+
+    .video-label h3,
+    .feature-tile h3,
+    .character-copy h3 {
+      font-size: 1rem;
+      font-weight: 950;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .video-label p,
+    .feature-tile p,
+    .character-copy p {
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.55;
+    }
+
+    .features {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent),
+        rgba(255, 255, 255, 0.02);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .feature-tile {
+      position: relative;
+      min-height: 192px;
+      overflow: hidden;
+      padding: 22px;
+      transition: transform 180ms ease, border-color 180ms ease;
+    }
+
+    .feature-tile::before {
+      content: attr(data-icon);
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      margin-bottom: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--cyan);
+      font-size: 1.2rem;
+      font-weight: 950;
+    }
+
+    .feature-tile::after {
+      content: "";
+      position: absolute;
+      right: -44px;
+      bottom: -48px;
+      width: 142px;
+      height: 142px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(255, 49, 88, 0.16), transparent 64%);
+    }
+
+    .feature-tile:hover {
+      border-color: rgba(255, 176, 46, 0.38);
+      transform: translateY(-3px);
+    }
+
+    .feature-tile h3 {
+      margin-bottom: 9px;
+    }
+
+    .character-section {
+      overflow: hidden;
+    }
+
+    .survivor-strip {
+      display: grid;
+      grid-template-columns: minmax(180px, 0.35fr) minmax(0, 1fr);
+      gap: 22px;
+      align-items: center;
+      margin-bottom: 18px;
+      border: 1px solid rgba(61, 233, 255, 0.2);
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, rgba(61, 233, 255, 0.12), rgba(255, 255, 255, 0.035)),
+        rgba(7, 10, 17, 0.84);
+      padding: clamp(16px, 3vw, 26px);
+    }
+
+    .survivor-strip img {
+      width: min(260px, 100%);
+      justify-self: center;
+      filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.62)) drop-shadow(0 0 18px rgba(61, 233, 255, 0.12));
+      animation: spriteFloat 3.6s ease-in-out infinite;
+    }
+
+    .survivor-copy {
+      display: grid;
+      gap: 8px;
+    }
+
+    .survivor-copy h3 {
+      font-size: clamp(1.4rem, 3vw, 2.35rem);
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .survivor-copy p {
+      max-width: 720px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .character-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .character-card {
+      position: relative;
+      display: grid;
+      min-height: 475px;
+      overflow: hidden;
+      align-content: end;
+      transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+    }
+
+    .character-card:hover {
+      border-color: rgba(255, 49, 88, 0.5);
+      box-shadow: 0 28px 56px rgba(0, 0, 0, 0.66), 0 0 24px rgba(255, 49, 88, 0.16);
+      transform: translateY(-5px);
+    }
+
+    .character-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 220ms ease;
+    }
+
+    .character-card:hover .character-video {
+      opacity: 0.52;
+    }
+
+    .character-art {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      width: min(102%, 300px);
+      max-width: none;
+      transform: translateX(-50%);
+      filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.68));
+      transition: transform 220ms ease, filter 220ms ease;
+      animation: spriteFloat 3.8s ease-in-out infinite;
+    }
+
+    .character-card:nth-child(2n) .character-art {
+      animation-delay: -1.2s;
+    }
+
+    .character-card:nth-child(3n) .character-art {
+      animation-delay: -2.1s;
+    }
+
+    .character-card:hover .character-art {
+      transform: translateX(-50%) scale(1.04);
+      filter: drop-shadow(0 22px 30px rgba(0, 0, 0, 0.72)) drop-shadow(0 0 16px rgba(255, 49, 88, 0.22));
+    }
+
+    .character-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, transparent 28%, rgba(4, 5, 10, 0.18) 52%, rgba(4, 5, 10, 0.96) 100%),
+        radial-gradient(circle at 50% 16%, rgba(61, 233, 255, 0.12), transparent 52%);
+    }
+
+    .character-copy {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      gap: 8px;
+      padding: 18px;
+    }
+
+    .download {
+      padding-bottom: clamp(84px, 10vw, 130px);
+    }
+
+    .download-panel {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 0.42fr);
+      gap: 24px;
+      overflow: hidden;
+      align-items: center;
+      padding: clamp(24px, 5vw, 52px);
+    }
+
+    .download-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 82% 22%, rgba(255, 49, 88, 0.2), transparent 30rem),
+        linear-gradient(135deg, rgba(61, 233, 255, 0.08), transparent 38%);
+    }
+
+    .download-copy,
+    .download-art {
+      position: relative;
+      z-index: 1;
+    }
+
+    .download-copy {
+      display: grid;
+      gap: 14px;
+    }
+
+    .download-copy h2 {
+      max-width: 760px;
+    }
+
+    .download-copy p {
+      max-width: 660px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .download-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .download-note {
+      color: #c6cfdf;
+      font-size: 0.9rem;
+    }
+
+    .download-art {
+      display: grid;
+      justify-items: center;
+      gap: 12px;
+    }
+
+    .download-art img {
+      width: min(310px, 90%);
+      filter: drop-shadow(0 24px 38px rgba(0, 0, 0, 0.64)) drop-shadow(0 0 18px rgba(61, 233, 255, 0.12));
+      animation: spriteFloat 3.2s ease-in-out infinite;
+    }
+
+    .download-stat {
+      display: inline-flex;
+      gap: 8px;
+      border: 1px solid rgba(61, 233, 255, 0.2);
+      border-radius: 6px;
+      background: rgba(61, 233, 255, 0.07);
+      color: var(--cyan);
+      padding: 8px 10px;
+      font-size: 0.8rem;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .floating-download {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 25;
+      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.48), 0 0 26px rgba(255, 49, 88, 0.24);
+    }
+
+    footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      padding: 24px clamp(20px, 4vw, 48px) 32px;
+    }
+
+    .footer-inner {
+      display: flex;
+      width: min(1180px, 100%);
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 auto;
+      font-size: 0.92rem;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 520ms ease, transform 520ms ease;
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes spriteFloat {
+      0%,
+      100% {
+        translate: 0 0;
+      }
+
+      50% {
+        translate: 0 -12px;
+      }
+    }
+
+    @keyframes slowSpin {
+      to {
+        rotate: 360deg;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 1ms !important;
+      }
+    }
+
+    @media (max-width: 1080px) {
+      .hero-content,
+      .download-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .sprite-stage {
+        min-height: 360px;
+        align-items: center;
+      }
+
+      .hero-copy {
+        padding-bottom: 0;
+      }
+
+      .video-grid,
+      .feature-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .character-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .nav {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .nav a {
+        flex: 1;
+        text-align: center;
+      }
+
+      .hero {
+        min-height: auto;
+      }
+
+      .hero-content {
+        padding-top: 138px;
+      }
+
+      .button,
+      .hero-actions,
+      .download-actions {
+        width: 100%;
+      }
+
+      .button {
+        padding-inline: 12px;
+      }
+
+      .video-grid,
+      .feature-grid,
+      .character-grid,
+      .survivor-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .character-card {
+        min-height: 430px;
+      }
+
+      .character-art {
+        width: min(88%, 330px);
+      }
+
+      .floating-download {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+      }
+
+      .footer-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar" aria-label="Tag 2.0 navigation">
+      <a class="brand" href="#top" aria-label="Tag 2.0 home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Tag 2.0</span>
+      </a>
+      <nav class="nav" aria-label="Page sections">
+        <a href="#gameplay">Gameplay</a>
+        <a href="#features">Features</a>
+        <a href="#characters">Killers</a>
+        <a href="#download">Download</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-media" aria-hidden="true">
+          <video src="{{ hero_video_url }}" autoplay muted loop playsinline preload="metadata"></video>
+        </div>
+        <div class="hero-content">
+          <div class="hero-copy reveal">
+            <span class="eyebrow">Mac build available now</span>
+            <h1 id="hero-title">Tag 2.0</h1>
+            <p class="hero-tagline">A childhood chase game rebuilt as a fast, retro arcade nightmare.</p>
+            <p class="hero-pitch">Run the arena, dodge the hunters, and squeeze through one more round while the pressure keeps climbing. It is simple to start, loud under pressure, and hard to put down.</p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="{{ download_url }}" download>Download Tag 2.0 for Mac</a>
+              <a class="button button-secondary" href="#gameplay">Watch Gameplay</a>
+              <a class="button button-scoreboard" href="/tag2_0/leaderboard/ui/" target="_blank" rel="noopener noreferrer">View Global Top 10</a>
+            </div>
+            <div class="hero-meta" aria-label="Game highlights">
+              <span>ZIP download</span>
+              <span>Retro chase action</span>
+              <span>Multiple killers</span>
+            </div>
+          </div>
+          <div class="sprite-stage reveal" aria-hidden="true">
+            <img class="hero-sprite" src="{{ survivor.image }}" alt="">
+          </div>
+        </div>
+      </section>
+
+      <section id="gameplay" class="section reveal" aria-labelledby="gameplay-title">
+        <div class="section-inner">
+          <div class="section-header">
+            <span class="kicker">Gameplay Preview</span>
+            <h2 id="gameplay-title">Watch the chase tighten.</h2>
+            <p>Short clips show the speed, threat, and arcade tone of Tag 2.0 without slowing the page down.</p>
+          </div>
+
+          <div class="video-grid">
+            {% for video in preview_videos %}
+              <article class="video-card">
+                <div class="video-frame">
+                  <video src="{{ video.url }}" muted loop playsinline preload="metadata"></video>
+                </div>
+                <div class="video-label">
+                  <h3>{{ video.title }}</h3>
+                  <p>{{ video.caption }}</p>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="section features reveal" aria-labelledby="features-title">
+        <div class="section-inner">
+          <div class="section-header">
+            <span class="kicker">Why Play</span>
+            <h2 id="features-title">Fast rounds. Sharp turns. Bad decisions.</h2>
+            <p>Tag 2.0 is built for instant tension: readable rules, quick restarts, and enough enemy personality to make every run feel risky.</p>
+          </div>
+
+          <div class="feature-grid">
+            <article class="feature-tile" data-icon="01">
+              <h3>Retro Arcade Pressure</h3>
+              <p>Bold sprite art, punchy motion, and a dark cabinet-style mood keep each chase feeling immediate.</p>
+            </article>
+            <article class="feature-tile" data-icon="02">
+              <h3>Easy Start</h3>
+              <p>Jump in quickly, learn the arena fast, then discover how little room there is for sloppy movement.</p>
+            </article>
+            <article class="feature-tile" data-icon="03">
+              <h3>Killer Variety</h3>
+              <p>Each hunter brings a different vibe, silhouette, and threat profile to the arena.</p>
+            </article>
+            <article class="feature-tile" data-icon="04">
+              <h3>Replayable Runs</h3>
+              <p>Short rounds make it natural to chase one better route, one cleaner dodge, and one higher score.</p>
+            </article>
+            <article class="feature-tile" data-icon="05">
+              <h3>Creepy-Fun Energy</h3>
+              <p>It is tense without taking itself too seriously: arcade horror with a mischievous grin.</p>
+            </article>
+            <article class="feature-tile" data-icon="06">
+              <h3>Score Chasing</h3>
+              <p>Built around the kind of clean loop that makes every mistake feel like a dare to try again.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="characters" class="section character-section reveal" aria-labelledby="characters-title">
+        <div class="section-inner">
+          <div class="section-header">
+            <span class="kicker">Survive The Chase</span>
+            <h2 id="characters-title">Meet the killers.</h2>
+            <p>Every hunter has a different silhouette, tempo, and brand of trouble. Learn the faces before they find your route.</p>
+          </div>
+
+          <article class="survivor-strip">
+            <img src="{{ survivor.image }}" alt="{{ survivor.name }}">
+            <div class="survivor-copy">
+              <span class="kicker">You</span>
+              <h3>{{ survivor.name }}</h3>
+              <p>{{ survivor.description }}</p>
+            </div>
+          </article>
+
+          <div class="character-grid">
+            {% for character in characters %}
+              <article class="character-card">
+                <video class="character-video" src="{{ character.video }}" muted loop playsinline preload="metadata"></video>
+                <img class="character-art" src="{{ character.image }}" alt="{{ character.name }}">
+                <div class="character-copy">
+                  <h3>{{ character.name }}</h3>
+                  <p>{{ character.description }}</p>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section id="download" class="section download reveal" aria-labelledby="download-title">
+        <div class="section-inner">
+          <div class="download-panel">
+            <div class="download-copy">
+              <span class="kicker">Play Now</span>
+              <h2 id="download-title">Download the Mac build and start running.</h2>
+              <p>Grab the ZIP file, unzip it, and open the app on your Mac. The arena is waiting, and the killers are already moving.</p>
+              <div class="download-actions">
+                <a class="button button-primary" href="{{ download_url }}" download>Download Tag 2.0 for Mac</a>
+                <a class="button button-scoreboard" href="/tag2_0/leaderboard/ui/" target="_blank" rel="noopener noreferrer">View Global Top 10 Leaderboard</a>
+              </div>
+              <p class="download-note">Download format: ZIP file. After downloading, unzip the file before launching the app.</p>
+            </div>
+            <div class="download-art" aria-hidden="true">
+              <img src="{{ characters.1.image }}" alt="">
+              <span class="download-stat">Mac ZIP</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <a class="button button-primary floating-download" href="{{ download_url }}" download>Download for Mac</a>
+
+    <footer>
+      <div class="footer-inner">
+        <strong>Tag 2.0</strong>
+        <span>Fast retro chase action with an ominous arcade edge.</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.16 });
+
+    document.querySelectorAll(".reveal").forEach((element) => {
+      revealObserver.observe(element);
+    });
+
+    document.querySelectorAll(".video-card video, .character-card video").forEach((video) => {
+      const parent = video.closest(".video-card, .character-card");
+      if (!parent) {
+        return;
+      }
+
+      parent.addEventListener("mouseenter", () => {
+        video.play().catch(() => {});
+      });
+
+      parent.addEventListener("mouseleave", () => {
+        video.pause();
+        video.currentTime = 0;
+      });
+    });
+  </script>
+</body>
+</html>

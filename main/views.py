@@ -1,4 +1,5 @@
 import json
+from django.conf import settings
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -75,6 +76,71 @@ def pay_mortgage(request):
 
 def giotube(request):
     return render(request, 'main/giotube.html', {'videos': build_giotube_playlist()})
+
+
+def tag2_0(request):
+    media_base_url = f"{settings.MEDIA_URL}tag2_0/"
+    characters = [
+        {
+            "name": "Ducky",
+            "image": f"{media_base_url}pictures/ducky.png",
+            "video": f"{media_base_url}videos/ducky_intro_video.mp4",
+            "description": "A fast, unpredictable hunter built for tight turns and sudden pressure.",
+        },
+        {
+            "name": "Malice",
+            "image": f"{media_base_url}pictures/malice.png",
+            "video": f"{media_base_url}videos/malice_intro_video.mp4",
+            "description": "An animal-like killer... capable of morphing into a tiger or dino all while chasing you.",
+        },
+        {
+            "name": "Show Runner",
+            "image": f"{media_base_url}pictures/show_runner.png",
+            "video": f"{media_base_url}videos/show_runner_intro_video.mp4",
+            "description": "Keeps the arena moving, the tension climbing, and the spotlight on you.",
+        },
+        {
+            "name": "Sub Slasher",
+            "image": f"{media_base_url}pictures/sub_slasher.png",
+            "video": f"{media_base_url}videos/sub_slasher_intro_video.mp4",
+            "description": "Cuts through you with precision with his popscicle knife... has no patience for mistakes.",
+        },
+        {
+            "name": "Vengeance Bot",
+            "image": f"{media_base_url}pictures/vengance_bot.png",
+            "video": f"{media_base_url}videos/vengance_bot_intro_video.mp4",
+            "description": "A relentless machine that learns the rhythm of your panic.",
+        },
+    ]
+    context = {
+        "download_url": f"{media_base_url}downloads/Tag%202.0-mac.zip",
+        "hero_video_url": f"{media_base_url}videos/tag2_0_promo.mp4",
+        "gameplay_video_url": f"{media_base_url}videos/game_intro_video.mp4",
+        "characters": characters,
+        "survivor": {
+            "name": "Survivor",
+            "image": f"{media_base_url}pictures/survivor.png",
+            "description": "Your only job: move first, stay sharp, and survive one more chase.",
+        },
+        "preview_videos": [
+            {
+                "title": "Arcade Chase",
+                "url": f"{media_base_url}videos/tag2_0_promo.mp4",
+                "caption": "A quick hit of the speed, pressure, and retro horror tone.",
+            },
+            {
+                "title": "Game Intro",
+                "url": f"{media_base_url}videos/game_intro_video.mp4",
+                "caption": "Step into the arena and get a feel for the rules fast.",
+            },
+            {
+                "title": "Show Runner",
+                "url": f"{media_base_url}videos/show_runner_intro_video.mp4",
+                "caption": "The chase gets louder when the show starts.",
+            },
+        ],
+    }
+    return render(request, "main/tag2_0.html", context)
 
 
 @csrf_exempt
